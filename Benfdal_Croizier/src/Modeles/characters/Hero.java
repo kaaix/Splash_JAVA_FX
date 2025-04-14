@@ -81,14 +81,23 @@ public class Hero extends Character {
         }
     }
 
-    private boolean fight(Character enemy) {
-        while(enemy.getHealth() > 0 && this.health > 0) {
-            this.attack(enemy);
-            if(enemy.health > 0) {
-                enemy.attack(this);
-            }
+   private boolean fight(Character enemy) {
+    int round = 1;
+    while(enemy.getHealth() > 0 && this.health > 0) {
+      
+        System.out.println("-------------------------");
+        System.out.println("Round " + round + ":");
+        this.attack(enemy);
+        if(enemy.health > 0) {
+            enemy.attack(this);
         }
-        return this.health > 0;
+        round++;
+        System.out.println("-------------------------");
+        
     }
+    System.out.println("");
+    return this.health > 0;
+}
+
 
 }

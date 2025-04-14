@@ -1,15 +1,15 @@
 package Controleurs.Menu;
 
 import Modeles.core.Game;
-import Vues.Menu.FlashCrashMenu;
+import Vues.Menu.SplashMenu;
 import javafx.stage.Stage;
 
 public class MenuControleur {
 
-    private FlashCrashMenu vue;
+    private SplashMenu vue;
     private Stage stage;
 
-    public MenuControleur(FlashCrashMenu vue, Stage stage) {
+    public MenuControleur(SplashMenu vue, Stage stage) {
         this.vue = vue;
         this.stage = stage;
     }

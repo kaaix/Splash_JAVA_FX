@@ -4,6 +4,8 @@ import Modeles.characters.Hero;
 import Modeles.items.weapons.Weapon;
 import Modeles.map.Direction;
 import Modeles.map.Location;
+import Modeles.items.consumables.Consumable;
+import java.util.List;
 
 public class Helper {
 
@@ -13,11 +15,11 @@ public class Helper {
         Hero res = null;
         System.out.println("Choose a weapon: Shooter, Charger, or Roller");
         String weaponChoice = System.console().readLine();
-    
+
         Weapon starterWeapon = Weapon.parseFromString(weaponChoice);
         System.out.println("What is your name?");
         String nameChoice = System.console().readLine();
-        
+
         res = new Hero(nameChoice, 100, starterWeapon);
         return res;
     }
@@ -36,9 +38,13 @@ public class Helper {
 
     public static void askPlayerForDirection(Location location) {
         System.out.println("Choose a level:");
-        for(Direction dir : location.getExitDirections()) {
-            // Display all loot ?
-            String text = String.format("%d: go %s : %s", location.getFloorLevel(), dir.toString(), location.getLoot().get(0).toString());
+        List<Direction> exits = location.getExitDirections();
+        List<Consumable> loot = location.getLoot();
+
+        for (int i = 0; i < exits.size(); i++) {
+            Direction dir = exits.get(i);
+            String lootHint = loot.isEmpty() ? "unknown" : loot.get(0).toString();
+            String text = String.format("%d: go %s : %s", i + 1, dir.toString(), lootHint);
             System.out.println(text);
         }
     }
@@ -50,8 +56,6 @@ public class Helper {
         res = Command.FromString(input);
         return res;
     }
-
-
 
     public static void displayHelp() {
         StringBuilder builder = new StringBuilder();
@@ -66,5 +70,4 @@ public class Helper {
     public static void displayGameExit() {
         System.out.println("Exiting game ...");
     }
-
 }

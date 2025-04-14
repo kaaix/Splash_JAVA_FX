@@ -22,7 +22,7 @@ all:
 
 run:
 	@echo '🚀 Lancement interface graphique...'
-	@$(JAVA) $(JAVAFLAGS) Vues.Menu.FlashCrashMenu
+	@$(JAVA) $(JAVAFLAGS) Vues.Menu.SplashMenu
 
 run-console:
 	@echo '🖥️  Lancement version console...'

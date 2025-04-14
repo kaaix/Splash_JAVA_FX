@@ -13,7 +13,7 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.io.File;
 
-public class FlashCrashMenu extends Application {
+public class SplashMenu extends Application {
 
     private MenuControleur controleur;
 
@@ -74,7 +74,7 @@ public class FlashCrashMenu extends Application {
         StackPane root = new StackPane(background, logo, menu);
         Scene scene = new Scene(root, 800, 600);
         primaryStage.setScene(scene);
-        primaryStage.setTitle("Flash Crash Menu");
+        primaryStage.setTitle("Splash Menu");
         primaryStage.show();
 
         // Lancer les animations
