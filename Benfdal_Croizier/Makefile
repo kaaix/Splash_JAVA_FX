@@ -27,6 +27,7 @@ run:
 run-console:
 	@echo '🖥️  Lancement version console...'
 	@$(JAVA) $(JAVAFLAGS) Modeles.Program
+
 clean:
 	@echo '🗑️  Nettoyage...'
 	@rm -rf $(OUT_DIR)/*

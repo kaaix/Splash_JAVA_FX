@@ -8,7 +8,7 @@ import Modeles.items.consumables.Consumable;
 
 public class LootRoom extends Location {
 
-    public final static double LOOT_ROOM_SPAWN_CHANCE = 10.0 /100;
+    public final static double LOOT_ROOM_SPAWN_CHANCE =  0.10 ;
 
     public LootRoom(String name, String description, int floorLevel, List<Direction> exits) {
         super(name, description, floorLevel, exits);

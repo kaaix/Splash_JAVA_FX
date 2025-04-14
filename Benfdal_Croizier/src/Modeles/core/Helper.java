@@ -6,7 +6,7 @@ import Modeles.map.Direction;
 import Modeles.map.Location;
 import Modeles.items.consumables.Consumable;
 import java.util.List;
-
+import java.util.Map;
 public class Helper {
 
     private Helper() {}
@@ -39,16 +39,16 @@ public class Helper {
     public static void askPlayerForDirection(Location location) {
         System.out.println("Choose a level:");
         List<Direction> exits = location.getExitDirections();
-        List<Consumable> loot = location.getLoot();
+        Map<Direction, Location> nextFloors = location.getAllNextFloors();
 
-        for (int i = 0; i < exits.size(); i++) {
-            Direction dir = exits.get(i);
-            String lootHint = loot.isEmpty() ? "unknown" : loot.get(0).toString();
-            String text = String.format("%d: go %s : %s", i + 1, dir.toString(), lootHint);
-            System.out.println(text);
+        int i = 1;
+        for (Direction dir : exits) {
+            Location next = nextFloors.get(dir);
+            String loot = next.getLoot().isEmpty() ? "nothing" : next.getLoot().get(0).toString();
+            System.out.println(i + ": go " + dir + " → " + loot);
+            i++;
         }
     }
-
     public static Command askPlayerForCommand() {
         Command res = null;
         System.out.println("Enter a command (HELP to see the options):");

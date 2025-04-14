@@ -4,13 +4,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-
+import java.util.Map;
+import java.util.HashMap;
 import Modeles.characters.Character;
 import Modeles.characters.Enemy;
 import Modeles.items.consumables.Consumable;
 
 public class Location {
-    
+    private Map<Direction, Location> nextFloors = new HashMap<>();
     protected String name;
     protected String description;
     protected int floorLevel;
@@ -117,5 +118,18 @@ public class Location {
     public void displayOnEnter() {
         System.out.println(String.format("You are on floor %d, on %s difficulty !", this.floorLevel, this.difficulty));
     }
+    public void generateNextFloors(int currentFloorLevel) {
+        for (Direction dir : this.getExitDirections()) {
+            Location next = Location.generateNextFloor(Direction.opposite(dir), currentFloorLevel);
+            nextFloors.put(dir, next);
+        }
+    }
 
+    public Location getNextLocation(Direction dir) {
+        return nextFloors.get(dir);
+    }
+
+    public Map<Direction, Location> getAllNextFloors() {
+        return nextFloors;
+    }
 }
