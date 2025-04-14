@@ -1,87 +1,80 @@
 package Vues.Menu;
 
 import Controleurs.Menu.MenuControleur;
-import javafx.animation.*;
-import javafx.application.Application;
-import javafx.scene.Scene;
+import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.Stage;
-import javafx.util.Duration;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.effect.DropShadow;
+
 import java.io.File;
 
-public class SplashMenu extends Application {
+public class SplashMenu extends VBox {
 
-    private MenuControleur controleur;
+    public SplashMenu(MenuControleur controleur) {
+        this.setSpacing(30);
+        this.setAlignment(Pos.CENTER);
 
-    @Override
-    public void start(Stage primaryStage) {
-        controleur = new MenuControleur(this, primaryStage); // Associe la vue au contrôleur
-
-        // Vérifier si les fichiers existent avant de les charger
-        File bgFile = new File("src/image/menu_background.png");
+        // === Logo ===
         File logoFile = new File("src/image/logo.png");
-
-        if (!bgFile.exists() || !logoFile.exists()) {
-            System.out.println("❌ ERREUR: Images introuvables !");
-            return;
+        if (logoFile.exists()) {
+            ImageView logo = new ImageView(new Image(logoFile.toURI().toString()));
+            logo.setFitHeight(200);
+            logo.setPreserveRatio(true);
+            this.getChildren().add(logo);
+        } else {
+            System.out.println("❌ Logo non trouvé !");
         }
 
-        // Charger le fond d'écran et le logo
-        ImageView background = new ImageView(new Image(bgFile.toURI().toString()));
-        background.setFitWidth(800);
-        background.setFitHeight(600);
+        // === Boutons ===
+        Button play = createStyledButton("▶ PLAY");
+        Button settings = createStyledButton("⚙ SETTINGS");
 
-        ImageView logo = new ImageView(new Image(logoFile.toURI().toString()));
-        logo.setFitWidth(400);
-        logo.setFitHeight(200);
-        logo.setTranslateY(-50);
+        // Actions
+        play.setOnAction(e -> controleur.lancerJeu());
+        settings.setOnAction(e -> {
+            System.out.println("🟡 Bouton settings cliqué !");
+            controleur.ouvrirSettings();
+        });
 
-        // Animation du logo
-        TranslateTransition fall = new TranslateTransition(Duration.seconds(1), logo);
-        fall.setFromY(-300);
-        fall.setToY(0);
-        fall.setInterpolator(Interpolator.EASE_OUT);
 
-        ScaleTransition bounce = new ScaleTransition(Duration.seconds(0.3), logo);
-        bounce.setFromX(1);
-        bounce.setFromY(1);
-        bounce.setToX(1.1);
-        bounce.setToY(1.1);
-        bounce.setAutoReverse(true);
-        bounce.setCycleCount(2);
-
-        SequentialTransition logoAnimation = new SequentialTransition(fall, bounce);
-
-        // Boutons
-        Button playButton = new Button("Play");
-        Button settingsButton = new Button("Paramètres");
-
-        playButton.setStyle("-fx-font-size: 24px; -fx-background-color: #ff6600; -fx-text-fill: white;");
-        settingsButton.setStyle("-fx-font-size: 24px; -fx-background-color: #444; -fx-text-fill: white;");
-
-        // Actions des boutons gérées par le contrôleur
-        playButton.setOnAction(e -> controleur.lancerJeu());
-        settingsButton.setOnAction(e -> controleur.ouvrirParametres());
-
-        // Mise en page
-        VBox menu = new VBox(20, playButton, settingsButton);
-        menu.setTranslateY(100);
-
-        StackPane root = new StackPane(background, logo, menu);
-        Scene scene = new Scene(root, 800, 600);
-        primaryStage.setScene(scene);
-        primaryStage.setTitle("Splash Menu");
-        primaryStage.show();
-
-        // Lancer les animations
-        logoAnimation.play();
+        this.getChildren().addAll(play, settings);
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    private Button createStyledButton(String text) {
+        Button button = new Button(text);
+        button.setFont(Font.font("Arial", 20));
+        button.setTextFill(Color.web("#333333"));
+        button.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-padding: 10 30;" +
+                        "-fx-cursor: hand;"
+        );
+
+        DropShadow shadow = new DropShadow();
+        shadow.setOffsetY(3.0);
+        shadow.setColor(Color.rgb(0, 0, 0, 0.2));
+        button.setEffect(shadow);
+
+        button.setOnMouseEntered(e -> button.setStyle(
+                "-fx-background-color: #dddddd;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-padding: 10 30;" +
+                        "-fx-cursor: hand;"
+        ));
+
+        button.setOnMouseExited(e -> button.setStyle(
+                "-fx-background-color: white;" +
+                        "-fx-background-radius: 20;" +
+                        "-fx-padding: 10 30;" +
+                        "-fx-cursor: hand;"
+        ));
+
+        return button;
     }
 }

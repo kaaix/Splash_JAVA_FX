@@ -1,0 +1,10 @@
+# 📄 Changelog – Splash JavaFX
+
+## v1.0-stable – ✅ Version stable initiale
+
+- Architecture **MVC complète** (Modeles / Vues / Controleurs)
+- Système de jeu textuel et graphique : **menu, exploration, loot, ennemis, boss**
+- **Gestion des consommables et des armes**
+- **Carte et salles** : `Direction`, `LootRoom`, `BossLocation`, etc.
+- Interface JavaFX stylisée avec fond animé et **boutons personnalisés**
+- **Makefile** intégré pour compilation/exécution rapide

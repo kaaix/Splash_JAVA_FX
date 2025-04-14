@@ -1,6 +1,0 @@
-# 🧩 Changelog
-
-## v1.0-final-initial
-- Structure du projet Splash en JavaFX finalisée
-- MVC fonctionnel, menu animé, logique de base stable
-- Prévisualisation du loot ajoutée

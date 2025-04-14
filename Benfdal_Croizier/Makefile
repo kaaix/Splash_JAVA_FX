@@ -22,11 +22,7 @@ all:
 
 run:
 	@echo '🚀 Lancement interface graphique...'
-	@$(JAVA) $(JAVAFLAGS) Vues.Menu.SplashMenu
-
-run-console:
-	@echo '🖥️  Lancement version console...'
-	@$(JAVA) $(JAVAFLAGS) Modeles.Program
+	@$(JAVA) $(JAVAFLAGS) Main
 
 clean:
 	@echo '🗑️  Nettoyage...'
