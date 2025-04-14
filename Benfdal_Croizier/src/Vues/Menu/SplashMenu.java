@@ -18,9 +18,10 @@ public class SplashMenu extends VBox {
     public SplashMenu(MenuControleur controleur) {
         this.setSpacing(30);
         this.setAlignment(Pos.CENTER);
+        controleur.jouerMusiqueMenu(); // propre, centré dans le contrôleur
 
         // === Logo ===
-        File logoFile = new File("src/image/logo.png");
+        File logoFile = new File("Benfdal_Croizier/src/assets/image/logo.png");
         if (logoFile.exists()) {
             ImageView logo = new ImageView(new Image(logoFile.toURI().toString()));
             logo.setFitHeight(200);
@@ -33,16 +34,27 @@ public class SplashMenu extends VBox {
         // === Boutons ===
         Button play = createStyledButton("▶ PLAY");
         Button settings = createStyledButton("⚙ SETTINGS");
+        Button quitter = createStyledButton("❌ QUITTER");
 
         // Actions
-        play.setOnAction(e -> controleur.lancerJeu());
+        play.setOnAction(e -> {
+            utils.SoundEffects.play("Benfdal_Croizier/src/assets/audio/play.wav");
+            controleur.lancerJeu();
+        });
+
         settings.setOnAction(e -> {
-            System.out.println("🟡 Bouton settings cliqué !");
+            utils.SoundEffects.play("Benfdal_Croizier/src/assets/audio/settingssfx.wav");
             controleur.ouvrirSettings();
         });
 
+        quitter.setOnAction(e -> {
+            utils.SoundEffects.play("Benfdal_Croizier/src/assets/audio/quit.wav"); // facultatif
+            utils.MusicPlayer.fadeOutAndStop(1.5); // fondu audio
+            utils.TransitionUtils.fadeToBlackAndExit(controleur.getStage()); // fondu visuel + Platform.exit()
+        });
 
-        this.getChildren().addAll(play, settings);
+
+        this.getChildren().addAll(play, settings, quitter);
     }
 
     private Button createStyledButton(String text) {

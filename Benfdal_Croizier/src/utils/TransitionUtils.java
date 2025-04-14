@@ -1,7 +1,9 @@
 package utils;
 
 import javafx.animation.FadeTransition;
+import javafx.application.Platform;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
@@ -40,5 +42,25 @@ public class TransitionUtils {
         });
 
         fadeOut.play();
+    }
+
+    public static void fadeToBlackAndExit(Stage stage) {
+        Scene scene = stage.getScene();
+        StackPane root = (StackPane) scene.getRoot();
+
+        Rectangle blackOverlay = new Rectangle();
+        blackOverlay.setWidth(scene.getWidth());
+        blackOverlay.setHeight(scene.getHeight());
+        blackOverlay.setFill(Color.BLACK);
+        blackOverlay.setOpacity(0);
+
+        root.getChildren().add(blackOverlay);
+
+        FadeTransition fade = new FadeTransition(Duration.seconds(1.5), blackOverlay);
+        fade.setFromValue(0);
+        fade.setToValue(1);
+
+        fade.setOnFinished(e -> Platform.exit());
+        fade.play();
     }
 }

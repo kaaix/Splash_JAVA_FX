@@ -6,16 +6,18 @@ import java.util.Map;
 import java.util.Properties;
 
 public class SettingsModel {
-    private static final String FILE_PATH = "config/settings.conf";
+    private static final String FILE_PATH = "Benfdal_Croizier/config/settings.conf";
 
-    private int volume;
+    private int musicVolume;
+    private int sfxVolume ;
     private boolean fullscreen;
     private String langue;
     private Map<String, String> touches;
 
     public SettingsModel() {
         // Valeurs par défaut
-        volume = 50;
+        musicVolume = 50;
+        sfxVolume = 50;
         fullscreen = false;
         langue = "Français";
         touches = new HashMap<>();
@@ -29,6 +31,10 @@ public class SettingsModel {
         SettingsModel model = new SettingsModel();
         File file = new File(FILE_PATH);
 
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
         if (!file.exists()) {
             System.out.println("📁 Aucune config détectée, chargement des valeurs par défaut.");
             return model;
@@ -38,7 +44,8 @@ public class SettingsModel {
             Properties props = new Properties();
             props.load(reader);
 
-            model.volume = Integer.parseInt(props.getProperty("volume", "50"));
+            model.musicVolume = Integer.parseInt(props.getProperty("musicVolume", "50"));
+            model.sfxVolume = Integer.parseInt(props.getProperty("sfxVolume", "50"));
             model.fullscreen = Boolean.parseBoolean(props.getProperty("fullscreen", "false"));
             model.langue = props.getProperty("langue", "Français");
 
@@ -59,7 +66,8 @@ public class SettingsModel {
 
     public void save() {
         Properties props = new Properties();
-        props.setProperty("volume", String.valueOf(volume));
+        props.setProperty("musicVolume", String.valueOf(musicVolume));
+        props.setProperty("sfxVolume", String.valueOf(sfxVolume));
         props.setProperty("fullscreen", String.valueOf(fullscreen));
         props.setProperty("langue", langue);
         for (Map.Entry<String, String> entry : touches.entrySet()) {
@@ -78,8 +86,11 @@ public class SettingsModel {
     }
 
     // === Getters & Setters ===
-    public int getVolume() { return volume; }
-    public void setVolume(int volume) { this.volume = volume; }
+    public int getMusicVolume() { return musicVolume; }
+    public void setMusicVolume(int volume) { this.musicVolume = volume; }
+
+    public int getSfxVolume() { return sfxVolume; }
+    public void setSfxVolume(int volume) { this.sfxVolume = volume; }
 
     public boolean isFullscreen() { return fullscreen; }
     public void setFullscreen(boolean fullscreen) { this.fullscreen = fullscreen; }

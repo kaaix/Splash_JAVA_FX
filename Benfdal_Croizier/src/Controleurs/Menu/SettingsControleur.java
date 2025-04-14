@@ -2,11 +2,15 @@ package Controleurs.Menu;
 
 import Modeles.settings.SettingsModel;
 import Vues.Menu.SettingsView;
+import javafx.scene.Parent;
 import javafx.stage.Stage;
+import utils.InkBackground;
+import utils.MusicPlayer;
+import utils.SoundEffects;
 
 public class SettingsControleur {
     private Stage stage;
-    private SettingsView vue;
+    private Parent vue;
     private MenuControleur menuControleur;
     private SettingsModel model;
 
@@ -14,23 +18,42 @@ public class SettingsControleur {
         this.stage = stage;
         this.menuControleur = menuControleur;
         this.model = SettingsModel.load(); // 🔄 Chargement
-        this.vue = new SettingsView(this);
+        InkBackground fond = new InkBackground();
+        fond.prefWidthProperty().bind(stage.widthProperty());
+        fond.prefHeightProperty().bind(stage.heightProperty());
+
+        SettingsView content = new SettingsView(this);
+
+        javafx.scene.layout.StackPane root = new javafx.scene.layout.StackPane(fond, content);
+        this.vue = root;
+
     }
 
-    public SettingsView getVue() {
+    public Parent getVue() {
         return vue;
     }
 
     // === Volume ===
-    public int getVolume() {
-        return model.getVolume();
+    public int getMusicVolume() {
+        return model.getMusicVolume();
     }
 
-    public void setVolume(int value) {
-        model.setVolume(value);
-        model.save(); // 💾
-        System.out.println("🎚 Volume réglé à : " + value + "%");
+    public void setMusicVolume(int volume) {
+        model.setMusicVolume(volume);
+        model.save();
+        MusicPlayer.setVolume(volume / 100.0);
     }
+
+    public int getSfxVolume() {
+        return model.getSfxVolume();
+    }
+
+    public void setSfxVolume(int volume) {
+        model.setSfxVolume(volume);
+        model.save();
+        SoundEffects.setVolume(volume / 100.0);
+    }
+
 
     // === Plein écran ===
     public boolean isFullscreen() {
@@ -70,6 +93,16 @@ public class SettingsControleur {
     }
 
     public void retourMenu() {
-        utils.TransitionUtils.fadeToScene(stage, new Vues.Menu.SplashMenu(menuControleur));
+        stage.setFullScreenExitHint("");
+        stage.setFullScreen(model.isFullscreen());
+
+        Vues.Menu.SplashMenu menu = new Vues.Menu.SplashMenu(menuControleur);
+        javafx.scene.layout.StackPane root = menuControleur.creerVueAvecFond(menu);
+        utils.TransitionUtils.fadeToScene(stage, root);
+    }
+
+
+    public void sauvegarder() {
+        model.save();
     }
 }

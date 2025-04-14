@@ -24,7 +24,11 @@ public class GameControleur {
 
     public void quitterJeu() {
         System.out.println("Retour au menu depuis le jeu...");
+
         MenuControleur menuControleur = new MenuControleur(stage);
-        utils.TransitionUtils.fadeToScene(stage, new Vues.Menu.SplashMenu(menuControleur));
+        Vues.Menu.SplashMenu menu = new Vues.Menu.SplashMenu(menuControleur);
+        javafx.scene.layout.StackPane root = menuControleur.creerVueAvecFond(menu);
+        utils.TransitionUtils.fadeToScene(stage, root);
     }
+
 }
