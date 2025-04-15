@@ -48,7 +48,7 @@ public class SplashMenu extends VBox {
         });
 
         quitter.setOnAction(e -> {
-            utils.SoundEffects.play("Benfdal_Croizier/src/assets/audio/quit.wav"); // facultatif
+            utils.SoundEffects.play("Benfdal_Croizier/src/assets/audio/quit.wav");
             utils.MusicPlayer.fadeOutAndStop(1.5); // fondu audio
             utils.TransitionUtils.fadeToBlackAndExit(controleur.getStage()); // fondu visuel + Platform.exit()
         });

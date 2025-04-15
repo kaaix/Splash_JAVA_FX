@@ -1,6 +1,6 @@
 package Controleurs.Menu;
 
-import Controleurs.Menu.SettingsControleur;
+import Controleurs.Game.GameControleur;
 import Modeles.settings.SettingsModel;
 import Vues.Menu.SplashMenu;
 import javafx.scene.Scene;

@@ -21,10 +21,10 @@ public class SettingsModel {
         fullscreen = false;
         langue = "Français";
         touches = new HashMap<>();
-        touches.put("moveUp", "Z");
-        touches.put("moveDown", "S");
-        touches.put("moveLeft", "Q");
-        touches.put("moveRight", "D");
+        touches.put("moveUp", "w");
+        touches.put("moveDown", "s");
+        touches.put("moveLeft", "a");
+        touches.put("moveRight", "d");
     }
 
     public static SettingsModel load() {
