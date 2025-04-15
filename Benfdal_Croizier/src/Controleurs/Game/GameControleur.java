@@ -6,7 +6,6 @@ import Modeles.settings.SettingsModel;
 import Vues.game.GameView;
 import javafx.scene.Parent;
 import javafx.scene.input.KeyCode;
-import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 
 import java.util.HashMap;
@@ -15,54 +14,42 @@ import java.util.Map;
 
 public class GameControleur {
     private final Stage stage;
-    private GameModel model;
     private final GameView vue;
-    private SettingsModel settings;
+    private final GameModel model;
     private final Map<String, KeyCode> keyBindings = new HashMap<>();
 
     public GameControleur(Stage stage) {
         this.stage = stage;
-        this.vue = new GameView();
+        this.model = new GameModel();
+        this.vue = new GameView(model);
 
-        // Chargement des paramètres (touches personnalisées)
-        this.settings = SettingsModel.load();
+        // touches personnalisées
+        SettingsModel settings = SettingsModel.load();
         settings.getTouches().forEach((action, keyName) -> {
             try {
                 keyBindings.put(action, KeyCode.valueOf(keyName.toUpperCase(Locale.ROOT)));
             } catch (IllegalArgumentException e) {
-                System.err.println("❌ Touche invalide : " + keyName + " pour l’action " + action);
+                System.err.println("❌ Touche invalide : " + keyName);
             }
         });
 
-        // Centrage du joueur, puis initialisation du modèle
-        vue.centrerPlayerEnBas(() -> {
-            double x = vue.getPlayerX();
-            double y = vue.getPlayerY();
-            this.model = new GameModel(x, y);
+        vue.setPlayerPosition(model.getPlayerX(), model.getPlayerY());
 
-            // Contrôle clavier avec touches personnalisées
-            vue.setOnKeyPressed(event -> {
-                double futurX = model.getPlayerX();
-                double futurY = model.getPlayerY();
+        vue.setOnKeyPressed(event -> {
+            double futurX = model.getPlayerX();
+            double futurY = model.getPlayerY();
+            double pas = 8;
 
-                KeyCode code = event.getCode();
+            if (event.getCode() == keyBindings.get("moveUp")) futurY -= pas;
+            else if (event.getCode() == keyBindings.get("moveDown")) futurY += pas;
+            else if (event.getCode() == keyBindings.get("moveLeft")) futurX -= pas;
+            else if (event.getCode() == keyBindings.get("moveRight")) futurX += pas;
 
-                if (code == keyBindings.get("moveUp")) futurY -= 10;
-                else if (code == keyBindings.get("moveDown")) futurY += 10;
-                else if (code == keyBindings.get("moveLeft")) futurX -= 10;
-                else if (code == keyBindings.get("moveRight")) futurX += 10;
-
-                if (!vue.detecteCollision(futurX, futurY)) {
-                    model.setPlayerPosition(futurX, futurY);
-                    vue.setPlayerPosition(futurX, futurY);
-                }
-            });
+            if (model.peutAller(futurX, futurY)) {
+                model.setPlayerPosition(futurX, futurY);
+                vue.setPlayerPosition(futurX, futurY);
+            }
         });
-
-        // Obstacles (à compléter selon ta map)
-        vue.ajouterObstacle(new Rectangle(0, 100, 1920, 10));
-        vue.ajouterObstacle(new Rectangle(600, 0, 10, 1920));
-        vue.ajouterObstacle(new Rectangle(1300, 0, 10, 1920));
     }
 
     public Parent getVue() {
