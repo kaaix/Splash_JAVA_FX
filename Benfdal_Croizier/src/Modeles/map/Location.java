@@ -31,6 +31,12 @@ public class Location {
         this.exits = exits;
     }
 
+    public Location(int floorLevel, String description) {
+        this.floorLevel = floorLevel;
+        this.description = description;
+        this.difficulty = difficultyFromFloorLevel(floorLevel);
+    }
+
     public String getName() {
         return this.name;
     }
@@ -74,13 +80,7 @@ public class Location {
         for (int i = 0; i < enemyCount; i++) {
             int hp = new Random().nextInt(50) + 50;
             int attack = new Random().nextInt(10) + 5;
-            int speed;
-
-            if (difficulty == Difficulty.HARD) {
-                speed = 3;
-            } else {
-                speed = 2;
-            }
+            int speed = (difficulty == Difficulty.HARD) ? 3 : 2;
 
             enemies.add(new Enemy("Enemy_" + (i + 1), hp, attack, speed));
         }
@@ -89,47 +89,33 @@ public class Location {
     }
 
     public static Location generateNextFloor(Direction from, int floorLevel) {
-        int exitCount = new Random().nextInt(1,4);
+        int exitCount = new Random().nextInt(1, 4);
         List<Direction> exits = new ArrayList<Direction>();
         List<Direction> directions = new ArrayList<Direction>(Arrays.asList(Direction.values()));
-        while(exitCount > 0) {
+        while (exitCount > 0) {
             int ind = new Random().nextInt(directions.size());
             exits.add(directions.get(ind));
             directions.remove(ind);
             exitCount--;
         }
-        if(floorLevel == 9 || floorLevel == 19 || floorLevel == 29) {
-            return new BossLocation("Boss floor", "A boss floor", floorLevel+1, exits);
+        if (floorLevel == 9 || floorLevel == 19 || floorLevel == 29) {
+            return new BossLocation("Boss floor", "A boss floor", floorLevel + 1, exits);
         }
-        boolean isLootRoom = new Random().nextDouble() < LootRoom.LOOT_ROOM_SPAWN_CHANCE;
-        if(isLootRoom) {
-            return new LootRoom("Loot room", "A loot room", floorLevel+1, exits);
-        }
-        return new Location("Location", "A floor", floorLevel+1, exits);
+        return new Location("Location", "A floor", floorLevel + 1, exits);
     }
 
     private static Difficulty difficultyFromFloorLevel(int floorLevel) {
-        if(floorLevel <= 10) return Difficulty.EASY;
-        if(floorLevel <= 20) return Difficulty.NORMAL;
-        if(floorLevel <= 29) return Difficulty.HARD;
+        if (floorLevel <= 10) return Difficulty.EASY;
+        if (floorLevel <= 20) return Difficulty.NORMAL;
+        if (floorLevel <= 29) return Difficulty.HARD;
         return Difficulty.IMPOSSIBLE;
     }
 
     public void displayOnEnter() {
-        System.out.println(String.format("You are on floor %d, on %s difficulty !", this.floorLevel, this.difficulty));
-    }
-    public void generateNextFloors(int currentFloorLevel) {
-        for (Direction dir : this.getExitDirections()) {
-            Location next = Location.generateNextFloor(Direction.opposite(dir), currentFloorLevel);
-            nextFloors.put(dir, next);
-        }
+        System.out.println(String.format("You are on floor %d, on %s difficulty!", this.floorLevel, this.difficulty));
     }
 
     public Location getNextLocation(Direction dir) {
         return nextFloors.get(dir);
-    }
-
-    public Map<Direction, Location> getAllNextFloors() {
-        return nextFloors;
     }
 }

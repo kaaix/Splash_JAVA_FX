@@ -2,7 +2,7 @@ package Modeles.items.weapons;
 
 import Modeles.items.Item;
 
-public abstract class Weapon extends Item {
+public class Weapon extends Item {
 
     protected int firePower;
     protected float fireRate;

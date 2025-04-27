@@ -1,71 +1,55 @@
 package Modeles.game;
 
+import Modeles.characters.Hero;
+import Modeles.map.Location;
+import Modeles.map.Direction;
+
+import java.util.List;
+
 public class GameModel {
+
     private final boolean[][] grilleMarchable;
     private double playerX, playerY;
     private final int tailleCase = 64;
+    private Hero hero;
+    private int currentFloor = 0;
+    private static final int TOTAL_FLOOR = 30;
+    private Location locationActuelle;
 
-    public GameModel() {
+    public GameModel(Hero hero) {
+        this.hero = hero;
         grilleMarchable = new boolean[17][30];
 
-        // tout est marchable par défaut
+        // Initialisation de la grille
         for (int y = 0; y < 17; y++) {
             for (int x = 0; x < 30; x++) {
                 grilleMarchable[y][x] = true;
             }
         }
 
+        this.locationActuelle = new Location(1, "Début du jeu");
 
-        // mur horizontal au-dessus
-        for (int x = 8; x <= 20; x++) grilleMarchable[0][x] = false;
-
-// murs verticaux gauche
+        // Exemple de murs
+        for (int x = 8; x <= 20; x++) grilleMarchable[3][x] = false;
         for (int y = 0; y <= 16; y++) grilleMarchable[y][8] = false;
-
-// murs verticaux droite
         for (int y = 0; y <= 16; y++) grilleMarchable[y][20] = false;
 
-
-        for (int y = 13; y <= 16; y++) {
-            for (int x = 9; x <= 12; x++) {
-                grilleMarchable[y][x] = false;
-            }
-        }
-
-        for (int y = 13; y <= 16; y++) {
-            for (int x = 16; x <= 19; x++) {
-                grilleMarchable[y][x] = false;
-            }
-        }
-
-
-        // position de spawn (ex: case 13,13)
+        // Position initiale du joueur
         playerX = 13 * tailleCase;
         playerY = 13 * tailleCase;
     }
 
     public boolean peutAller(double futurX, double futurY) {
-        double hitboxWidth = 64;  // largeur de la hitbox
-        double hitboxHeight = 54;  // hauteur (épaisseur des pieds)
+        double spriteWidth = 150;
+        double spriteHeight = 150;
 
-        double piedX = futurX + 64; // centre
-        double piedY = futurY + 192; // bas
+        double piedX = futurX + spriteWidth / 2;
+        double piedY = futurY + spriteHeight - 10;
 
-        int debutX = (int)((piedX - hitboxWidth / 2) / tailleCase);
-        int finX = (int)((piedX + hitboxWidth / 2) / tailleCase);
+        int caseX = (int)(piedX / tailleCase);
+        int caseY = (int)(piedY / tailleCase);
 
-        int debutY = (int)((piedY - hitboxHeight / 2) / tailleCase);
-        int finY = (int)((piedY + hitboxHeight / 2) / tailleCase);
-
-        for (int x = debutX; x <= finX; x++) {
-            for (int y = debutY; y <= finY; y++) {
-                if (!estMarchable(x, y)) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return estMarchable(caseX, caseY);
     }
 
     private boolean estMarchable(int x, int y) {
@@ -73,11 +57,6 @@ public class GameModel {
                 y >= 0 && y < grilleMarchable.length &&
                 grilleMarchable[y][x];
     }
-
-    public boolean estCaseBloquee(int x, int y) {
-        return !estMarchable(x, y);
-    }
-
 
     public void setPlayerPosition(double x, double y) {
         this.playerX = x;
@@ -90,5 +69,52 @@ public class GameModel {
 
     public double getPlayerY() {
         return playerY;
+    }
+
+    public int getTailleCase() {
+        return tailleCase;
+    }
+
+    public Hero getHero() {
+        return hero;
+    }
+
+    // Méthode pour déplacer le joueur
+    public void movePlayer(double newX, double newY) {
+        if (peutAller(newX, newY)) {
+            setPlayerPosition(newX, newY);
+            if (checkNextFloor()) {
+                // Changer d'étage et afficher la vue de choix
+                changerÉtage(currentFloor + 1, "Nouvelle zone !");
+            }
+        }
+    }
+
+    public boolean estCaseBloquee(int x, int y) {
+        // Retourne si la case (x, y) est bloquée dans la grille
+        return x >= 0 && x < grilleMarchable[0].length &&
+                y >= 0 && y < grilleMarchable.length &&
+                !grilleMarchable[y][x]; // Retourne true si la case est bloquée (mur)
+    }
+
+    // Vérifie si le joueur se trouve sur l'une des cases pour avancer à l'étage suivant
+    public boolean checkNextFloor() {
+        int x = (int) (playerX / tailleCase);
+        int y = (int) (playerY / tailleCase);
+
+        // Vérifie si le joueur est sur l'une des cases spécifiées
+        if ((x == 13 && y == 4) || (x == 14 && y == 4) || (x == 15 && y == 4)) {
+            System.out.println("Le joueur a atteint une case bleue pour passer à l'étage suivant !");
+            return true;
+        }
+        return false;
+    }
+
+    public Location getLocationActuelle() {
+        return locationActuelle;
+    }
+
+    public void changerÉtage(int nouvelÉtage, String nouvelleDescription) {
+        this.locationActuelle = new Location(nouvelÉtage, nouvelleDescription);
     }
 }

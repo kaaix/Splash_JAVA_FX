@@ -1,6 +1,11 @@
 package Vues.game;
 
 import Modeles.game.GameModel;
+import Modeles.characters.Hero;
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -9,19 +14,33 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.util.Duration;
 
 public class GameView extends StackPane {
-    private final ImageView player;
+    private GameModel model;
+    private ImageView player;
     private final ImageView mapView;
     private final int nbCols = 30;
     private final int nbRows = 17;
     private final int taille = 64;
     private Rectangle hitbox;
 
+    // Déclaration de la barre de vie
+    private Rectangle hpBarFill;  // Barre rouge pour les points de vie
+    private Label hpText;
+
+    private Image playerUp1, playerUp2;
+    private Image playerDown1, playerDown2;
+    private Timeline walkUpAnimation;
+    private Timeline walkDownAnimation;
+
+    // Déclaration du label pour afficher l'étage et la difficulté
+    private Label labelEtage;
 
     public GameView(GameModel model) {
         this.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
+        // Charger l'image de la carte
         Image mapImage = new Image(getClass().getResource("/assets/image/map.png").toExternalForm());
         mapView = new ImageView(mapImage);
         mapView.setPreserveRatio(false);
@@ -29,14 +48,75 @@ public class GameView extends StackPane {
         mapView.fitHeightProperty().bind(heightProperty());
         mapView.fitWidthProperty().bind(widthProperty());
 
+        // Chargement des images du joueur
+        playerUp1 = new Image(getClass().getResource("/assets/image/player-up1.png").toExternalForm());
+        playerUp2 = new Image(getClass().getResource("/assets/image/player-up2.png").toExternalForm());
+        playerDown1 = new Image(getClass().getResource("/assets/image/player-down1.png").toExternalForm());
+        playerDown2 = new Image(getClass().getResource("/assets/image/player-down2.png").toExternalForm());
+
+        // Animation du joueur en haut
+        walkUpAnimation = new Timeline(
+                new KeyFrame(Duration.seconds(0.3), e -> player.setImage(playerUp1)),
+                new KeyFrame(Duration.seconds(0.6), e -> player.setImage(playerUp2))
+        );
+        walkUpAnimation.setCycleCount(Animation.INDEFINITE);
+
+        // Animation du joueur en bas
+        walkDownAnimation = new Timeline(
+                new KeyFrame(Duration.seconds(0.3), e -> player.setImage(playerDown1)),
+                new KeyFrame(Duration.seconds(0.6), e -> player.setImage(playerDown2))
+        );
+        walkDownAnimation.setCycleCount(Animation.INDEFINITE);
+
+        // Image du joueur
         Image playerImage = new Image(getClass().getResource("/assets/image/player.png").toExternalForm());
         player = new ImageView(playerImage);
+        player.setFitWidth(150);
+        player.setFitHeight(150);
+        player.setPreserveRatio(true);
 
+        // Création du label pour l'étage et la difficulté
+        labelEtage = new Label();
+        labelEtage.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+        labelEtage.setTextFill(Color.WHITE);
+
+        // Lier le texte du label à l'étage et à la difficulté
+        labelEtage.textProperty().bind(Bindings.format("Étage %d - Difficulté: %s",
+                model.getLocationActuelle().getFloorLevel(),
+                model.getLocationActuelle().getDifficulty()));
+
+        // Création d'un Pane pour contenir le label et le positionner en haut à droite
+        StackPane labelContainer = new StackPane();
+        labelContainer.setPrefWidth(Region.USE_COMPUTED_SIZE);  // Largeur automatique
+        labelContainer.setPrefHeight(Region.USE_COMPUTED_SIZE); // Hauteur automatique
+        labelContainer.setTranslateX(-10);  // Décalage de 10 pixels à gauche (ajuster si nécessaire)
+        labelContainer.setTranslateY(10);   // Décalage de 10 pixels du haut
+        labelContainer.getChildren().add(labelEtage);
+
+        // Définir la mise en page dans un conteneur supérieur
+        StackPane.setAlignment(labelEtage, javafx.geometry.Pos.TOP_RIGHT);  // Alignement en haut à droite
+
+        // Définition de la hitbox
         hitbox = new Rectangle(64, 64);
         hitbox.setStroke(Color.LIMEGREEN);
-        hitbox.setFill(Color.color(0, 1, 0, 0.2)); // vert semi-transparent
+        hitbox.setFill(Color.color(0, 1, 0, 0.2));
 
+        // Création de la barre de vie
+        hpBarFill = new Rectangle(200, 20);  // La barre rouge pour les HP
+        hpBarFill.setFill(Color.RED);  // La barre rouge
+        hpBarFill.setLayoutX(10);  // Positionner à gauche
+        hpBarFill.setLayoutY(10);  // Positionner en haut
 
+        // Text pour les HP
+        hpText = new Label("HP: 100");
+        hpText.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        hpText.setTextFill(Color.WHITE);
+        hpText.setLayoutX(220);  // Positionner à droite de la barre
+
+        // Créer une couche pour la barre de vie et le texte
+        HBox hpBar = new HBox(5, hpBarFill, hpText);
+
+        // Création des couches pour la carte, le joueur, et la grille
         Pane mapLayer = new Pane(mapView);
         Pane playerLayer = new Pane();
         Pane grilleLayer = new Pane();
@@ -44,43 +124,96 @@ public class GameView extends StackPane {
 
         playerLayer.getChildren().addAll(player, hitbox);
 
-
-        // grille rouge avec remplissage pour les murs
+        // Affichage de la grille
         for (int y = 0; y < nbRows; y++) {
             for (int x = 0; x < nbCols; x++) {
                 Rectangle r = new Rectangle(x * taille, y * taille, taille, taille);
-                r.setStroke(Color.rgb(255, 0, 0, 0.3));
-                if (model.estCaseBloquee(x, y)) {
-                    r.setFill(Color.rgb(255, 0, 0, 0.3));
+
+                // Vérifie si la case est une des cases spéciales pour passer à l'étage suivant
+                if ((x == 13 && y == 4) || (x == 14 && y == 4) || (x == 15 && y == 4)) {
+                    r.setFill(Color.BLUE);  // Met la case en bleu
                 } else {
-                    r.setFill(Color.TRANSPARENT);
+                    // Sinon, on vérifie si la case est bloquée
+                    r.setFill(model.estCaseBloquee(x, y) ? Color.rgb(255, 0, 0, 0.3) : Color.TRANSPARENT);
                 }
 
-                // Ajout du texte au centre
+                // Bordure de la case
+                r.setStroke(Color.rgb(255, 0, 0, 0.3));  // Bordure rouge avec une légère transparence
+
+                // Affichage des coordonnées (pour la débug)
                 Label coord = new Label(x + "," + y);
                 coord.setTextFill(Color.rgb(255, 0, 0, 0.6));
                 coord.setFont(Font.font("Consolas", FontWeight.BOLD, 12));
-                coord.setLayoutX(x * taille + 4); // marge pour lisibilité
+                coord.setLayoutX(x * taille + 4);
                 coord.setLayoutY(y * taille + 4);
 
+                // Ajouter les rectangles et les labels de coordonnées dans le `grilleLayer`
                 grilleLayer.getChildren().addAll(r, coord);
             }
         }
 
-        this.getChildren().addAll(mapLayer, grilleLayer, playerLayer);
+        // Ajouter tous les éléments à la vue
+        this.getChildren().addAll(mapLayer, grilleLayer, playerLayer, hpBar, labelContainer);  // Ajouter le label avec les autres éléments
         this.setFocusTraversable(true);
+
+        // Mettre à jour la barre de vie du héros
+        updateHpLabel(model);
+    }
+
+    // Méthode pour mettre à jour la barre de vie
+    public void updateHealth(int currentHealth, int maxHealth) {
+        double healthPercentage = (double) currentHealth / maxHealth;  // Calculer la proportion de la vie
+        hpBarFill.setWidth(200 * healthPercentage);  // Ajuster la largeur de la barre rouge
+        hpText.setText("HP: " + currentHealth);  // Afficher les HP
     }
 
     public void setPlayerPosition(double x, double y) {
         player.setLayoutX(x);
         player.setLayoutY(y);
 
-        // positionner la hitbox en bas du sprite
-        hitbox.setWidth(64);
-        hitbox.setHeight(54);
-        hitbox.setLayoutX(x + 64 - 8);  // centré
-        hitbox.setLayoutY(y + 192 - 4); // aligné aux pieds
+        double hitboxWidth = 16;
+        double hitboxHeight = 10;
+
+        hitbox.setWidth(hitboxWidth);
+        hitbox.setHeight(hitboxHeight);
+        hitbox.setLayoutX(x + (150 - hitboxWidth) / 2);
+        hitbox.setLayoutY(y + 150 - hitboxHeight - 10);
+
+        // Mettre à jour la barre de vie à chaque déplacement
+        updateHealth(20, 100); // Exemple de mise à jour de la barre de vie
+    }
+
+    // Méthode pour mettre à jour les HP du modèle
+    private void updateHpLabel(GameModel model) {
+        if (model != null && model.getHero() != null) {
+            int hp = model.getHero().getHealth(); // Récupérer les HP du héros
+            updateHealth(hp, 100);  // Mise à jour de la barre de vie
+        }
+    }
+
+    public void updateFloorLabel() {
+        // Mettre à jour le label de l'étage dans la vue
+        labelEtage.setText("Étage " + model.getLocationActuelle().getFloorLevel() + " - Difficulté : " + model.getLocationActuelle().getDifficulty());
+    }
 
 
+    public void startWalkUpAnimation() {
+        walkDownAnimation.stop();
+        walkUpAnimation.play();
+    }
+
+    public void stopWalkUpAnimation() {
+        walkUpAnimation.stop();
+        player.setImage(playerUp1);
+    }
+
+    public void startWalkDownAnimation() {
+        walkUpAnimation.stop();
+        walkDownAnimation.play();
+    }
+
+    public void stopWalkDownAnimation() {
+        walkDownAnimation.stop();
+        player.setImage(playerDown1);
     }
 }

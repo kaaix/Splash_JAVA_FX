@@ -1,31 +1,34 @@
-# Dossiers 
+# Dossiers
 SRC_DIR := Benfdal_Croizier/src
 OUT_DIR := Benfdal_Croizier/out
 
-# Détection automatique des fichiers source
+# Sources Java
 SRCS := $(shell find $(SRC_DIR) -name "*.java")
 
-# Chemin vers Zulu JavaFX avec JavaFX intégré
-JC := /home/mahdi/S6/JAVAFX/zulu21/bin/javac
-JAVA := /home/mahdi/S6/JAVAFX/zulu21/bin/java
+# Java ZuluFX (adapter JAVA_HOME sous Windows ou commenter sous Linux)
+JAVA_HOME := C:/Users/skeel/Documents/cours/Gestion\ de\ projet/zulu21.40.17-ca-fx-jdk21.0.6-win_x64
+JC := $(JAVA_HOME)/bin/javac
+JAVA := $(JAVA_HOME)/bin/java
 
-# Compilation sans --module-path (Zulu JDK intègre déjà JavaFX)
+# Flags
 JCFLAGS := -d $(OUT_DIR) -cp $(SRC_DIR)
 JAVAFLAGS := -cp $(OUT_DIR)
 
-# Règles
-.PHONY: all run run-console clean
+# Classe principale
+MAIN_CLASS := Main
 
-all:
-	@echo '🔧 Compilation JavaFX...'
+.PHONY: all run clean
+
+all: clean
+	@echo 🔧 Compilation Java...
 	@$(JC) $(JCFLAGS) $(SRCS)
+	@echo ✅ Compilation terminée
 
-run:
-	@echo '🚀 Lancement interface graphique...'
-	@$(JAVA) $(JAVAFLAGS) Main
+run: all
+	@echo 🚀 Lancement...
+	@$(JAVA) $(JAVAFLAGS) $(MAIN_CLASS)
 
 clean:
-	@echo '🗑️  Nettoyage...'
+	@echo 🧹 Nettoyage...
 	@rm -rf $(OUT_DIR)/*
-	@find . -type f -name "*:Zone.Identifier" -exec rm -f {} +
-	@echo "✅ Fichiers supprimés"
+	@echo ✅ Nettoyage terminé
