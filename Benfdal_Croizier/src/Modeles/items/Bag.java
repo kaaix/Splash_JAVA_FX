@@ -5,7 +5,7 @@ import java.util.List;
 
 public class Bag implements IContainer {
 
-    private static final int DEFAULT_CAPACITY = 5;
+    private static final int DEFAULT_CAPACITY = 100;
 
     private int capacity;
     private List<Item> items;

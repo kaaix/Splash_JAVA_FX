@@ -7,6 +7,7 @@ public abstract class Character {
     protected int attackPower;
     protected float speed;
     protected float critChance;
+    protected int maxHealth = 100;
 
     public Character(String name, int health, int attackPower, float speed) {
         this.name = name;
@@ -32,6 +33,11 @@ public abstract class Character {
     public int getAttackPower() {
         return this.attackPower;
     }
+
+    public float getCritChance() {
+        return critChance;
+    }
+
 
     public float getSpeed() {
         return this.speed;
@@ -63,5 +69,18 @@ public abstract class Character {
         target.health -= damage;
         System.out.println(String.format("%s deals %d damage to %s !", this.name, this.attackPower, target.name));
     }
+
+    public void resetStats() {
+        this.health = maxHealth;
+        this.attackPower = 100;
+        this.speed = 100;
+        this.critChance = 0;
+    }
+
+    public int getMaxHealth() {
+        return maxHealth;
+    }
+
+
 
 }

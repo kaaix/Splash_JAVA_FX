@@ -10,6 +10,8 @@ import Modeles.characters.Character;
 import Modeles.characters.Enemy;
 import Modeles.items.consumables.Consumable;
 
+import java.awt.Point;
+
 public class Location {
     private Map<Direction, Location> nextFloors = new HashMap<>();
     protected String name;
@@ -28,6 +30,7 @@ public class Location {
 
         this.loot = Consumable.getRandomConsumable(1);
         this.enemies = Location.generateEnemies(difficulty);
+
         this.exits = exits;
     }
 
@@ -35,6 +38,7 @@ public class Location {
         this.floorLevel = floorLevel;
         this.description = description;
         this.difficulty = difficultyFromFloorLevel(floorLevel);
+        this.enemies = Location.generateEnemies(difficulty);
     }
 
     public String getName() {
@@ -80,7 +84,7 @@ public class Location {
         for (int i = 0; i < enemyCount; i++) {
             int hp = new Random().nextInt(50) + 50;
             int attack = new Random().nextInt(10) + 5;
-            int speed = (difficulty == Difficulty.HARD) ? 3 : 2;
+            int speed = (difficulty == Difficulty.HARD) ? 50 : 30;
 
             enemies.add(new Enemy("Enemy_" + (i + 1), hp, attack, speed));
         }
@@ -110,6 +114,8 @@ public class Location {
         if (floorLevel <= 29) return Difficulty.HARD;
         return Difficulty.IMPOSSIBLE;
     }
+
+
 
     public void displayOnEnter() {
         System.out.println(String.format("You are on floor %d, on %s difficulty!", this.floorLevel, this.difficulty));

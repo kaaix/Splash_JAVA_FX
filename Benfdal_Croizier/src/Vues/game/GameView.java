@@ -1,5 +1,6 @@
 package Vues.game;
 
+import Modeles.characters.Character;
 import Modeles.game.GameModel;
 import Modeles.characters.Hero;
 import javafx.animation.Animation;
@@ -16,6 +17,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class GameView extends StackPane {
     private GameModel model;
     private ImageView player;
@@ -28,6 +32,9 @@ public class GameView extends StackPane {
     // Déclaration de la barre de vie
     private Rectangle hpBarFill;  // Barre rouge pour les points de vie
     private Label hpText;
+    private Label speedText;
+    private Label attackText;
+    private Label critText;
 
     private Image playerUp1, playerUp2;
     private Image playerDown1, playerDown2;
@@ -37,7 +44,12 @@ public class GameView extends StackPane {
     // Déclaration du label pour afficher l'étage et la difficulté
     private Label labelEtage;
 
+    private final Pane enemyLayer = new Pane();
+    private final Map<Character, ImageView> enemyViews = new HashMap<>();
+
+
     public GameView(GameModel model) {
+        this.model = model; // ✅ affecte le modèle !
         this.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
         // Charger l'image de la carte
@@ -81,9 +93,9 @@ public class GameView extends StackPane {
         labelEtage.setTextFill(Color.WHITE);
 
         // Lier le texte du label à l'étage et à la difficulté
-        labelEtage.textProperty().bind(Bindings.format("Étage %d - Difficulté: %s",
-                model.getLocationActuelle().getFloorLevel(),
-                model.getLocationActuelle().getDifficulty()));
+        labelEtage.setText("Étage " + model.getLocationActuelle().getFloorLevel() +
+                " - Difficulté: " + model.getLocationActuelle().getDifficulty());
+
 
         // Création d'un Pane pour contenir le label et le positionner en haut à droite
         StackPane labelContainer = new StackPane();
@@ -113,16 +125,39 @@ public class GameView extends StackPane {
         hpText.setTextFill(Color.WHITE);
         hpText.setLayoutX(220);  // Positionner à droite de la barre
 
+        speedText = new Label();
+        attackText = new Label();
+        critText = new Label();
+
+        speedText.setFont(Font.font("Arial", FontWeight.NORMAL, 13));
+        speedText.setTextFill(Color.WHITE);
+
+        attackText.setFont(Font.font("Arial", FontWeight.NORMAL, 13));
+        attackText.setTextFill(Color.WHITE);
+
+        critText.setFont(Font.font("Arial", FontWeight.NORMAL, 13));
+        critText.setTextFill(Color.WHITE);
+
+
+
+
         // Créer une couche pour la barre de vie et le texte
         HBox hpBar = new HBox(5, hpBarFill, hpText);
+
+        VBox statsBox = new VBox(3, hpBar, speedText, attackText, critText);
+        statsBox.setLayoutX(10);
+        statsBox.setLayoutY(10);
+
 
         // Création des couches pour la carte, le joueur, et la grille
         Pane mapLayer = new Pane(mapView);
         Pane playerLayer = new Pane();
+
+        playerLayer.getChildren().addAll(player, hitbox);
+
         Pane grilleLayer = new Pane();
         grilleLayer.setMouseTransparent(true);
 
-        playerLayer.getChildren().addAll(player, hitbox);
 
         // Affichage de la grille
         for (int y = 0; y < nbRows; y++) {
@@ -153,7 +188,7 @@ public class GameView extends StackPane {
         }
 
         // Ajouter tous les éléments à la vue
-        this.getChildren().addAll(mapLayer, grilleLayer, playerLayer, hpBar, labelContainer);  // Ajouter le label avec les autres éléments
+        this.getChildren().addAll(mapLayer, grilleLayer,enemyLayer,playerLayer, statsBox, labelContainer);
         this.setFocusTraversable(true);
 
         // Mettre à jour la barre de vie du héros
@@ -180,8 +215,29 @@ public class GameView extends StackPane {
         hitbox.setLayoutY(y + 150 - hitboxHeight - 10);
 
         // Mettre à jour la barre de vie à chaque déplacement
-        updateHealth(20, 100); // Exemple de mise à jour de la barre de vie
+        updateHealth(model.getHero().getHealth(), 100);
+        updateStatsLabel();
     }
+
+    public void clearEnemies() {
+        enemyLayer.getChildren().clear();
+        enemyViews.clear();
+    }
+
+    public void addEnemy(Modeles.characters.Character mob, double x, double y) {
+        Image img = new Image(getClass()
+                .getResource("/assets/image/mob1.png")
+                .toExternalForm());
+        ImageView iv = new ImageView(img);
+        iv.setFitWidth(150);           // on reprend 150px comme pour le joueur
+        iv.setFitHeight(150);
+        iv.setPreserveRatio(true);
+        iv.setLayoutX(x);
+        iv.setLayoutY(y);
+        enemyViews.put(mob, iv);
+        enemyLayer.getChildren().add(iv);
+    }
+
 
     // Méthode pour mettre à jour les HP du modèle
     private void updateHpLabel(GameModel model) {
@@ -192,8 +248,14 @@ public class GameView extends StackPane {
     }
 
     public void updateFloorLabel() {
-        // Mettre à jour le label de l'étage dans la vue
-        labelEtage.setText("Étage " + model.getLocationActuelle().getFloorLevel() + " - Difficulté : " + model.getLocationActuelle().getDifficulty());
+        // Exemple de mise à jour de l'affichage de l'étage, tu devras l'adapter à ta vue
+        labelEtage.setText("Étage " + model.getLocationActuelle().getFloorLevel() +
+                " - Difficulté : " + model.getLocationActuelle().getDifficulty());
+
+    }
+
+    public ImageView getEnemyView(Modeles.characters.Character mob) {
+        return enemyViews.get(mob);
     }
 
 
@@ -216,4 +278,14 @@ public class GameView extends StackPane {
         walkDownAnimation.stop();
         player.setImage(playerDown1);
     }
+
+    public void updateStatsLabel() {
+        Hero hero = model.getHero();
+        if (hero != null) {
+            speedText.setText("Vitesse : " + hero.getSpeed());
+            attackText.setText("Attaque : " + hero.getAttackPower());
+            critText.setText("Critique : " + hero.getCritChance() + "%");
+        }
+    }
+
 }

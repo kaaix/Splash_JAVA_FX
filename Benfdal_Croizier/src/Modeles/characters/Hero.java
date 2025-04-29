@@ -2,6 +2,8 @@ package Modeles.characters;
 
 import Modeles.game.GameModel;
 import Modeles.items.Bag;
+import Modeles.items.Item;
+import Modeles.items.consumables.Consumable;
 import Modeles.items.weapons.Weapon;
 
 public class Hero extends Character {
@@ -55,4 +57,18 @@ public class Hero extends Character {
         double newY = this.getY() + gameModel.getTailleCase();
         gameModel.movePlayer(this.getX(), newY);
     }
+
+    public void addConsumable(Consumable c) {
+        c.useOn(this); // Applique l'effet sur le héros
+        bag.store(c);          // Et l'ajoute au sac si tu veux le garder en inventaire
+    }
+
+    public void reapplyBonuses() {
+        for (Item item : bag.getContent()) {
+            if (item instanceof Consumable) {
+                ((Consumable) item).useOn(this); // Cast et applique l'effet
+            }
+        }
+    }
+
 }

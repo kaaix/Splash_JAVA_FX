@@ -16,8 +16,7 @@ public class GameModel {
     private static final int TOTAL_FLOOR = 30;
     private Location locationActuelle;
 
-    public GameModel(Hero hero) {
-        this.hero = hero;
+    public GameModel() {
         grilleMarchable = new boolean[17][30];
 
         // Initialisation de la grille
@@ -79,13 +78,18 @@ public class GameModel {
         return hero;
     }
 
+    public void setHero(Hero hero) {
+        this.hero = hero;
+    }
+
+
     // Méthode pour déplacer le joueur
     public void movePlayer(double newX, double newY) {
         if (peutAller(newX, newY)) {
             setPlayerPosition(newX, newY);
             if (checkNextFloor()) {
                 // Changer d'étage et afficher la vue de choix
-                changerÉtage(currentFloor + 1, "Nouvelle zone !");
+                changerEtage(currentFloor + 1, "Nouvelle zone !");
             }
         }
     }
@@ -99,22 +103,27 @@ public class GameModel {
 
     // Vérifie si le joueur se trouve sur l'une des cases pour avancer à l'étage suivant
     public boolean checkNextFloor() {
-        int x = (int) (playerX / tailleCase);
-        int y = (int) (playerY / tailleCase);
+        double spriteWidth = 150;
+        double hitboxWidth = 16;
+        double hitboxHeight = 10;
+        double spriteHeight = 150;
 
-        // Vérifie si le joueur est sur l'une des cases spécifiées
-        if ((x == 13 && y == 4) || (x == 14 && y == 4) || (x == 15 && y == 4)) {
-            System.out.println("Le joueur a atteint une case bleue pour passer à l'étage suivant !");
-            return true;
-        }
-        return false;
+        // Centre bas du personnage = centre de la hitbox
+        double hitboxX = playerX + (spriteWidth - hitboxWidth) / 2;
+        double hitboxY = playerY + spriteHeight - hitboxHeight - 10;
+
+        int x = (int) (hitboxX / tailleCase);
+        int y = (int) (hitboxY / tailleCase);
+
+        return (x == 13 && y == 4) || (x == 14 && y == 4) || (x == 15 && y == 4);
     }
+
 
     public Location getLocationActuelle() {
         return locationActuelle;
     }
 
-    public void changerÉtage(int nouvelÉtage, String nouvelleDescription) {
+    public void changerEtage(int nouvelÉtage, String nouvelleDescription) {
         this.locationActuelle = new Location(nouvelÉtage, nouvelleDescription);
     }
 }
