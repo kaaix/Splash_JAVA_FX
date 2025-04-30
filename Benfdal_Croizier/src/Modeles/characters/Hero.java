@@ -71,4 +71,8 @@ public class Hero extends Character {
         }
     }
 
+    public void takeDamage(int amount) {
+        health = Math.max(0, health - amount);
+    }
+
 }

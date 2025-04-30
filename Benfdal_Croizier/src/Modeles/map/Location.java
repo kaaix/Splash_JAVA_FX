@@ -74,7 +74,7 @@ public class Location {
         int enemyCount;
 
         if (difficulty == Difficulty.EASY) {
-            enemyCount = 1;
+            enemyCount = 1; // Forcer au moins un ennemi même à l’étage 1
         } else if (difficulty == Difficulty.NORMAL) {
             enemyCount = 2;
         } else {

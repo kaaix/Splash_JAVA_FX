@@ -26,7 +26,8 @@ public class GameModel {
             }
         }
 
-        this.locationActuelle = new Location(1, "Début du jeu");
+        this.locationActuelle = new Location("Début", "Début du jeu", 1, List.of(Direction.NORTH));
+
 
         // Exemple de murs
         for (int x = 8; x <= 20; x++) grilleMarchable[3][x] = false;
@@ -124,6 +125,8 @@ public class GameModel {
     }
 
     public void changerEtage(int nouvelÉtage, String nouvelleDescription) {
-        this.locationActuelle = new Location(nouvelÉtage, nouvelleDescription);
+        this.currentFloor = nouvelÉtage; // ✅ MET À JOUR L'ÉTAGE COURANT
+        this.locationActuelle = new Location("Etage " + nouvelÉtage, nouvelleDescription, nouvelÉtage, List.of(Direction.NORTH));
     }
+
 }

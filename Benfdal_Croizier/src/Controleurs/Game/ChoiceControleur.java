@@ -52,7 +52,6 @@ public class ChoiceControleur {
         // 1) Gestion directe des flèches
         if (code == KeyCode.LEFT)  { selectLeftDoor();  return; }
         if (code == KeyCode.RIGHT) { selectRightDoor(); return; }
-        if (code == KeyCode.UP || code == KeyCode.DOWN) { confirmChoice(); return; }
 
         // 2) Via bindings custom
         KeyCode up    = keyBindings.get("moveUp");
@@ -62,7 +61,6 @@ public class ChoiceControleur {
 
         if (code == left)       selectLeftDoor();
         else if (code == right) selectRightDoor();
-        else if (code == up || code == down) confirmChoice();
     }
 
     public void initializeBonusChoices() {

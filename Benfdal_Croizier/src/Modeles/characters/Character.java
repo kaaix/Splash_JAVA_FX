@@ -63,7 +63,7 @@ public abstract class Character {
     public void attack(Character target) {
         boolean isCrit = Math.random() > critChance;
         int damage = attackPower * 2;
-        if(isCrit) {
+        if (isCrit) {
             damage *= 2;
         }
         target.health -= damage;

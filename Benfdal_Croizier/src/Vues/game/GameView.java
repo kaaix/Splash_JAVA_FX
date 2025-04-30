@@ -47,6 +47,9 @@ public class GameView extends StackPane {
     private final Pane enemyLayer = new Pane();
     private final Map<Character, ImageView> enemyViews = new HashMap<>();
 
+    private Rectangle attackZone;
+    private ImageView mapLockView;
+
 
     public GameView(GameModel model) {
         this.model = model; // ✅ affecte le modèle !
@@ -59,6 +62,14 @@ public class GameView extends StackPane {
         mapView.setSmooth(false);
         mapView.fitHeightProperty().bind(heightProperty());
         mapView.fitWidthProperty().bind(widthProperty());
+
+        Image mapLockImage = new Image(getClass().getResource("/assets/image/maplock.png").toExternalForm());
+        mapLockView = new ImageView(mapLockImage);
+        mapView.setPreserveRatio(false);
+        mapView.setSmooth(false);
+        mapView.fitHeightProperty().bind(heightProperty());
+        mapView.fitWidthProperty().bind(widthProperty());
+        mapLockView.setVisible(false);       // caché par défaut
 
         // Chargement des images du joueur
         playerUp1 = new Image(getClass().getResource("/assets/image/player-up1.png").toExternalForm());
@@ -153,6 +164,11 @@ public class GameView extends StackPane {
         Pane mapLayer = new Pane(mapView);
         Pane playerLayer = new Pane();
 
+        attackZone = new Rectangle(100, 80); // largeur, hauteur de la zone de frappe
+        attackZone.setFill(Color.color(1, 0, 0, 0.3)); // rouge transparent
+        attackZone.setVisible(false);
+        playerLayer.getChildren().add(attackZone);
+
         playerLayer.getChildren().addAll(player, hitbox);
 
         Pane grilleLayer = new Pane();
@@ -188,7 +204,7 @@ public class GameView extends StackPane {
         }
 
         // Ajouter tous les éléments à la vue
-        this.getChildren().addAll(mapLayer, grilleLayer,enemyLayer,playerLayer, statsBox, labelContainer);
+        this.getChildren().addAll(mapLayer,mapLockView, grilleLayer, enemyLayer, playerLayer, statsBox, labelContainer);
         this.setFocusTraversable(true);
 
         // Mettre à jour la barre de vie du héros
@@ -274,6 +290,15 @@ public class GameView extends StackPane {
         walkDownAnimation.play();
     }
 
+    public void verrouillerMap() {
+        mapLockView.setVisible(true);
+    }
+
+    public void deverrouillerMap() {
+        mapLockView.setVisible(false);
+    }
+
+
     public void stopWalkDownAnimation() {
         walkDownAnimation.stop();
         player.setImage(playerDown1);
@@ -287,5 +312,56 @@ public class GameView extends StackPane {
             critText.setText("Critique : " + hero.getCritChance() + "%");
         }
     }
+
+    public void startImmunityBlink() {
+        Timeline blink = new Timeline(
+                new KeyFrame(Duration.millis(100), e -> player.setOpacity(0.3)),
+                new KeyFrame(Duration.millis(200), e -> player.setOpacity(1.0))
+        );
+        blink.setCycleCount(10); // 2 secondes (10 * 200ms)
+        blink.setOnFinished(e -> player.setOpacity(1.0)); // remet normal
+        blink.play();
+    }
+
+    public void afficherZoneAttaqueDirectionnelle(double x, double y, String direction) {
+        double w = attackZone.getWidth();
+        double h = attackZone.getHeight();
+        double offsetX = 0, offsetY = 0;
+
+        switch (direction) {
+            case "up":
+                offsetX = 25;
+                offsetY = -h;
+                break;
+            case "down":
+                offsetX = 25;
+                offsetY = 150;
+                break;
+            case "left":
+                offsetX = -w;
+                offsetY = 25;
+                break;
+            case "right":
+                offsetX = 150;
+                offsetY = 25;
+                break;
+            default:
+                return;
+        }
+
+        attackZone.setLayoutX(x + offsetX);
+        attackZone.setLayoutY(y + offsetY);
+        attackZone.setVisible(true);
+    }
+
+    public void cacherZoneAttaque() {
+        attackZone.setVisible(false);
+    }
+
+    public Pane getEnemyLayer() {
+        return enemyLayer;
+    }
+
+
 
 }
