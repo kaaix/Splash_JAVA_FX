@@ -1,3 +1,8 @@
+/**
+ * Contrôleur de l’éditeur de niveaux 2D.
+ * Coordonne le modèle LevelEditorModel, la vue LevelEditorView
+ * et gère les interactions utilisateur (clics, chargement, sauvegarde).
+ */
 package Controleurs.Editor;
 
 import Controleurs.Menu.MenuControleur;
@@ -31,6 +36,14 @@ public class LevelEditorController {
     private final Stage stage;
     private final Parent vue;
 
+    /**
+     * Initialise l’éditeur de niveaux avec les dimensions et le menu parent.
+     *
+     * @param stage          la fenêtre principale (Stage) de l’application
+     * @param menuControleur le contrôleur du menu principal pour revenir en arrière
+     * @param cols           nombre de colonnes de la grille du niveau
+     * @param rows           nombre de lignes de la grille du niveau
+     */
     public LevelEditorController(Stage stage, MenuControleur menuControleur, int cols, int rows) {
         this.stage = stage;
         this.menuControleur = menuControleur;
@@ -47,10 +60,20 @@ public class LevelEditorController {
         this.vue = new StackPane(fond, contentWrapper);
     }
 
+    /**
+     * Retourne le nœud JavaFX (StackPane) à afficher pour cet éditeur.
+     *
+     * @return le Parent contenant la vue et le fond animé
+     */
     public Parent getVue() {
         return vue;
     }
 
+    /**
+     * Retourne le nombre de colonnes (resp. de lignes) du niveau.
+     *
+     * @return nombre de colonnes (getCols) ou de lignes (getRows)
+     */
     public int getCols() {
         return model.getCols();
     }
@@ -59,12 +82,26 @@ public class LevelEditorController {
         return model.getRows();
     }
 
+    /**
+     * Change l’étage courant du niveau d’un décalage donné,
+     * met à jour le modèle et actualise l’étiquette d’étage.
+     *
+     * @param delta incrément d’étage (+1 ou –1)
+     */
     public void changeFloorBy(int delta) {
         int newFloor = Math.max(0, model.getFloorNumber() + delta);
         model.setFloorNumber(newFloor);
         view.updateFloorLabel(newFloor);
     }
 
+    /**
+     * Gère le clic sur une case (x, y) selon l’outil sélectionné :
+     * obstacle, prochain étage, placement joueur ou ennemis.
+     * Met à jour le modèle puis redessine la grille.
+     *
+     * @param x coordonnée colonne du clic
+     * @param y coordonnée ligne du clic
+     */
     public void onTileClick(int x, int y) {
         Point2D p = new Point2D(x, y);
         boolean hasPlayer = model.getPlayerSpawn() != null && model.getPlayerSpawn().equals(p);
@@ -97,6 +134,10 @@ public class LevelEditorController {
         view.redraw();
     }
 
+    /**
+     * Ouvre un FileChooser pour sélectionner une image de fond
+     * et l’applique au modèle puis à la vue.
+     */
     public void onSelectBackground() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Images", "*.png", "*.jpg"));
@@ -107,6 +148,11 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Valide et sauvegarde le niveau au format JSON.
+     * Vérifie la présence d’un spawn joueur, d’au moins une tuile “next floor”
+     * et d’au moins un ennemi, sinon affiche un avertissement.
+     */
     public void onSave() {
         if (model.getPlayerSpawn() == null ||
                 model.getNextFloorTiles().isEmpty() ||
@@ -176,12 +222,20 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Réinitialise le modèle (grille vierge, étage 0) et redessine la vue.
+     */
     public void onReset() {
         model.clear();
         view.redraw();
         view.updateFloorLabel(model.getFloorNumber());
     }
 
+    /**
+     * Retourne au menu principal.
+     * Recharge les paramètres utilisateur (langue, plein écran, résolution),
+     * puis affiche le SplashMenu avec une transition.
+     */
     public void onReturn() {
         SettingsModel settings = SettingsModel.load();
         I18N.setLangue(settings.getLangue());
@@ -192,6 +246,11 @@ public class LevelEditorController {
         TransitionUtils.fadeToScene(stage, root);
     }
 
+    /**
+     * Ouvre un FileChooser pour charger un JSON de niveau,
+     * reconstruit un nouveau contrôleur + vue si le format est valide,
+     * et fait la transition vers celui-ci.
+     */
     public void onLoad() {
         FileChooser fc = new FileChooser();
         fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("Level JSON", "*.json"));
@@ -225,6 +284,12 @@ public class LevelEditorController {
         }
     }
 
+    /**
+     * Parse le contenu JSON d’un niveau, met à jour le modèle
+     * (étage, fond, grille, spawns joueur/ennemis) puis rafraîchit la vue.
+     *
+     * @param json la chaîne JSON représentant le niveau
+     */
     private void loadFromJson(String json) {
         try {
             model.clear();
@@ -291,7 +356,11 @@ public class LevelEditorController {
         }
     }
 
-
+    /**
+     * Affiche une boîte de dialogue d’erreur avec le message fourni.
+     *
+     * @param message le texte à afficher dans l’alerte
+     */
     private void showError(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setTitle("Erreur");

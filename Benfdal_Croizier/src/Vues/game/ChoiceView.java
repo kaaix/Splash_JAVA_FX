@@ -1,3 +1,9 @@
+/**
+ * Vue de choix de porte pour passer à l’étage suivant.
+ * Affiche trois flèches cliquables pour la sélection de la porte,
+ * gère l’affichage des bonus, le rendu des ennemis et la navigation
+ * au clavier (touche Entrée pour valider).
+ */
 package Vues.game;
 
 import Controleurs.Game.ChoiceControleur;
@@ -31,13 +37,25 @@ public class ChoiceView {
     private final Pane enemyLayer = new Pane();
     private final Map<Character, ImageView> enemyViews = new HashMap<>();
 
-
+    /**
+     * Construit la vue de sélection de porte.
+     *
+     * @param stage            la fenêtre principale (Stage) de l’application
+     * @param choiceController le contrôleur qui gère la logique de navigation et de sélection
+     */
     public ChoiceView(Stage stage, ChoiceControleur choiceController) {
         this.stage = stage;
         this.choiceController = choiceController; // ✅ injecté de l'extérieur
         this.root = buildRoot();
     }
 
+    /**
+     * Construit le conteneur principal de la vue.
+     * Initialise le fond, les trois flèches, les bonus cliquables,
+     * bind les dimensions au Stage et configure les handlers clavier.
+     *
+     * @return le Pane racine prêt à être affiché
+     */
     private Pane buildRoot() {
         Pane pane = new Pane();
         pane.prefWidthProperty().bind(stage.widthProperty());
@@ -127,22 +145,20 @@ public class ChoiceView {
         return pane;
     }
 
-    public void addEnemy(Modeles.characters.Character mob, double x, double y) {
-        // Choisis ici ton image d’ennemi (ou en fonction du type de mob)
-        Image img = new Image(getClass().getResource("/assets/image/mob1.png").toExternalForm());
-        ImageView iv = new ImageView(img);
-        iv.setFitWidth(64);   // taille = ton TILE_SIZE = 64
-        iv.setFitHeight(64);
-        iv.setLayoutX(x);
-        iv.setLayoutY(y);
-        enemyViews.put(mob, iv);
-        enemyLayer.getChildren().add(iv);
-    }
-
+    /**
+     * Retourne le composant JavaFX à insérer dans la scène.
+     *
+     * @return un Parent représentant l’arbre de nœuds de cette vue
+     */
     public Parent getVue() {
         return root;
     }
 
+    /**
+     * Crée un ImageView configuré pour représenter une flèche de sélection.
+     *
+     * @return une flèche (ImageView) prête à être positionnée et animée
+     */
     private ImageView createArrow() {
         ImageView iv = new ImageView(
                 new Image(getClass().getResource("/assets/image/arrow.png").toExternalForm())
@@ -152,6 +168,10 @@ public class ChoiceView {
         return iv;
     }
 
+    /**
+     * Met à jour l’opacité et les animations des flèches
+     * en fonction de l’indice de sélection renvoyé par le contrôleur.
+     */
     private void updateArrowSelection() {
         int sel = choiceController.getSelectedDoor();
         leftArrow.setOpacity(sel == 0 ? 1.0 : 0.5);
@@ -163,19 +183,30 @@ public class ChoiceView {
         animateArrow(rightArrow,  sel == 2);
     }
 
+    /**
+     * Renvoie le nom de fichier de l’image correspondant à un bonus donné.
+     *
+     * @param bonus l’objet Consumable dont on veut l’icône
+     * @return le nom du fichier image à charger (ex. "SpeedBoost.png")
+     */
     private String getImageForBonus(Consumable bonus) {
         String id = bonus.getClass().getSimpleName(); // Exemple : "SpeedBoost"
-        switch (id) {
-            case "SpeedBoost": return "SpeedBoost.png";
-            case "AttackPowerBoost": return "AttackPowerBoost.png";
-            case "HealthBoost": return "HealthBoost.png";
-            case "LuckBoost": return "LuckBoost.png";
-            default: return "default.png";
-        }
+        return switch (id) {
+            case "SpeedBoost" -> "SpeedBoost.png";
+            case "AttackPowerBoost" -> "AttackPowerBoost.png";
+            case "HealthBoost" -> "HealthBoost.png";
+            case "LuckBoost" -> "LuckBoost.png";
+            default -> "default.png";
+        };
     }
 
 
-
+    /**
+     * Anime ou stoppe l’oscillation verticale d’une flèche.
+     *
+     * @param arrow    la flèche (ImageView) à animer ou arrêter
+     * @param selected true pour démarrer l’animation (sélectionnée), false pour l’arrêter
+     */
     private void animateArrow(ImageView arrow, boolean selected) {
         TranslateTransition tt;
         if      (arrow == leftArrow)   tt = leftAnim;

@@ -1,3 +1,9 @@
+/**
+ * Gère les sprites et les animations du joueur.
+ * Charge les images directionnelles et crée les timelines
+ * pour l’animation de marche vers le haut et vers le bas,
+ * et positionne les images statiques pour les déplacements gauche/droite.
+ */
 package Vues.game;
 
 import javafx.animation.KeyFrame;
@@ -20,6 +26,12 @@ public class PlayerGraphicsManager {
     private final Timeline walkUpAnimation;
     private final Timeline walkDownAnimation;
 
+    /**
+     * Initialise le gestionnaire de graphismes du joueur.
+     * Charge toutes les images de déplacement et prépare les animations.
+     *
+     * @param player l’ImageView du joueur à animer
+     */
     public PlayerGraphicsManager(ImageView player) {
         this.player = player;
 
@@ -47,30 +59,52 @@ public class PlayerGraphicsManager {
         return anim;
     }
 
+    /**
+     * Démarre l’animation de marche vers le haut.
+     * Arrête l’animation de marche vers le bas si elle était en cours.
+     */
     public void startWalkUp() {
         walkDownAnimation.stop();
         walkUpAnimation.play();
     }
 
+    /**
+     * Arrête l’animation de marche vers le haut
+     * et replace le sprite sur l’image statique de face vers le haut.
+     */
     public void stopWalkUp() {
         walkUpAnimation.stop();
         player.setImage(playerUp1);
     }
 
+    /**
+     * Démarre l’animation de marche vers le bas.
+     * Arrête l’animation de marche vers le haut si elle était en cours.
+     */
     public void startWalkDown() {
         walkUpAnimation.stop();
         walkDownAnimation.play();
     }
 
+    /**
+     * Arrête l’animation de marche vers le bas
+     * et replace le sprite sur l’image statique de face vers le bas.
+     */
     public void stopWalkDown() {
         walkDownAnimation.stop();
         player.setImage(playerDown1);
     }
 
+    /**
+     * Positionne le sprite du joueur sur l’image statique face à gauche (pas d’animation).
+     */
     public void startWalkLeft() {
         player.setImage(playerLeft);
     }
 
+    /**
+     * Positionne le sprite du joueur sur l’image statique face à droite (pas d’animation).
+     */
     public void startWalkRight() {
         player.setImage(playerRight);
     }

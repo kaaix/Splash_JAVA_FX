@@ -1,3 +1,10 @@
+/**
+ * Contrôleur principal du menu de l’application.
+ * Gère l’affichage du SplashMenu, la navigation vers
+ * l’éditeur de niveaux, les paramètres, le chargement
+ * et la création de parties (sauvegardes), ainsi que
+ * l’application des préférences utilisateur.
+ */
 package Controleurs.Menu;
 
 import Controleurs.Editor.LevelEditorController;
@@ -29,11 +36,21 @@ public class MenuControleur {
     private Stage stage;
     private SettingsModel model;
 
+    /**
+     * Initialise le contrôleur du menu principal
+     * et charge les préférences (langue, plein écran, résolution).
+     *
+     * @param stage la fenêtre JavaFX principale (Stage)
+     */
     public MenuControleur(Stage stage) {
         this.stage = stage;
         this.model = SettingsModel.load(); // ✅ charge dès le début
     }
 
+    /**
+     * Affiche la vue de démarrage (SplashMenu) avec fond animé
+     * et applique les préférences utilisateur (plein écran, titre).
+     */
     public void afficherVue() {
         SplashMenu splashMenu = new SplashMenu(this);
 
@@ -52,29 +69,17 @@ public class MenuControleur {
         stage.show();
     }
 
-
-
+    /**
+     * Démarre la lecture en boucle de la musique de menu.
+     */
     public void jouerMusiqueMenu() {
         MusicPlayer.play("Benfdal_Croizier/src/assets/audio/menu.mp3", true);
     }
 
-    public void lancerJeu() {
-        GameControleur gc;  // 👈 déclaration AVANT tout
-        File save1 = new File("save1.bin");
-
-        if (!save1.exists()) {
-            gc = new GameControleur(stage);
-            gc.sauvegarderPartie("save1.bin");
-        } else {
-            gc = new GameControleur(stage);
-            gc.chargerDepuisSave(Objects.requireNonNull(chargerSave("save1.bin")));
-
-        }
-
-        TransitionUtils.fadeToScene(stage, gc.getVue());
-        MusicPlayer.fadeOutAndStop(1.5);
-    }
-
+    /**
+     * Ouvre une boîte de dialogue pour saisir largeur/hauteur
+     * d’un nouveau niveau, puis crée et affiche l’éditeur de niveaux.
+     */
     public void ouvrirEditeurNiveau() {
         Dialog<int[]> dialog = new Dialog<>();
         dialog.initOwner(stage);
@@ -126,18 +131,31 @@ public class MenuControleur {
         });
     }
 
-
-
-
+    /**
+     * Retourne le Stage associé à ce contrôleur.
+     *
+     * @return la fenêtre JavaFX principale
+     */
     public Stage getStage() {
         return stage;
     }
 
+    /**
+     * Ouvre la vue des paramètres (SettingsView)
+     * avec une transition animée.
+     */
     public void ouvrirSettings() {
         SettingsControleur sc = new SettingsControleur(stage, this);
         utils.TransitionUtils.fadeToScene(stage, sc.getVue());
     }
 
+    /**
+     * Construit un StackPane combinant un fond animé
+     * (InkBackground) et le contenu fourni.
+     *
+     * @param contenu le VBox à afficher par-dessus du fond
+     * @return un StackPane prêt à être positionné dans une scène
+     */
     public StackPane creerVueAvecFond(VBox contenu) {
         InkBackground fond = new InkBackground();
         fond.prefWidthProperty().bind(stage.widthProperty());
@@ -145,6 +163,13 @@ public class MenuControleur {
         return new StackPane(fond, contenu);
     }
 
+    /**
+     * Charge les données de sauvegarde depuis un fichier,
+     * initialise le GameControleur puis lance la partie
+     * via fadeToScene.
+     *
+     * @param fichier chemin vers le fichier de sauvegarde
+     */
     public void lancerJeuDepuisSave(String fichier) {
         try {
             FileInputStream fis = new FileInputStream(fichier);
@@ -164,10 +189,22 @@ public class MenuControleur {
         }
     }
 
+    /**
+     * Démarre la sélection de personnage pour une nouvelle partie
+     * et enregistre le futur fichier de sauvegarde.
+     *
+     * @param nomFichier nom du fichier où sera enregistrée la partie
+     */
     public void lancerNouvellePartie(String nomFichier) {
         ChoixPersoControleur cc = new ChoixPersoControleur(stage, nomFichier);
     }
 
+    /**
+     * Lit et désérialise les données de sauvegarde depuis un fichier.
+     *
+     * @param fichier chemin vers le fichier de sauvegarde
+     * @return l’objet SaveData ou null si erreur de lecture
+     */
     public SaveData chargerSave(String fichier) {
         try {
             FileInputStream fis = new FileInputStream(fichier);
@@ -183,6 +220,10 @@ public class MenuControleur {
         }
     }
 
+    /**
+     * Affiche le menu de sélection de sauvegarde si des fichiers
+     * existent, sinon lance directement une nouvelle partie.
+     */
     public void ouvrirSelectionSauvegarde() {
         File save1 = new File("save1.bin");
         File save2 = new File("save2.bin");
@@ -197,16 +238,24 @@ public class MenuControleur {
             StackPane root = creerVueAvecFond(selectSaveMenu);
             utils.TransitionUtils.fadeToScene(stage, root);
 
+
             // ✅ on force le plein écran juste après avoir mis la scène
             stage.setFullScreenExitHint("");
             stage.setFullScreen(this.model.isFullscreen());
         }
     }
 
-
+    /**
+     * Retourne le modèle de préférences chargé.
+     *
+     * @return l’instance courante de SettingsModel
+     */
     public SettingsModel getSettingsModel() {
         return model;
     }
 
+    /**
+     * Revient à la vue de démarrage (SplashMenu).
+     */
     public void retourSplash() { afficherVue(); }
 }

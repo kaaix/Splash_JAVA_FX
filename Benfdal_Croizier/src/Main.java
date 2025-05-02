@@ -16,9 +16,9 @@ public class Main extends Application {
         MusicPlayer.setVolume(model.getMusicVolume() / 100.0);
         SoundEffects.setVolume(model.getSfxVolume() / 100.0);
 
-        // Choix de résolution 16:9 par défaut
-        stage.setWidth(1280);
-        stage.setHeight(720);
+        String[] dims = model.getResolution().split("x");
+        stage.setWidth(Double.parseDouble(dims[0]));
+        stage.setHeight(Double.parseDouble(dims[1]));
 
         stage.setMinWidth(1280);  // ou 1280 si tu veux interdire toute réduction
         stage.setMinHeight(720); // équivalent 16:9 (960 * 9 / 16)

@@ -1,3 +1,8 @@
+/**
+ * Gère l’affichage et l’animation des sprites des ennemis.
+ * Charge les différentes images de mob, place chaque ennemi
+ * sur le Pane dédié et met à jour en continu leur barre de vie.
+ */
 package Vues.game;
 
 import Modeles.characters.Character;
@@ -16,13 +21,21 @@ import java.util.Map;
 import java.util.Objects;
 
 public class EnemyGraphicsManager {
-
     private final Pane enemyLayer;
     private final Map<Character, Pane> enemyViews;
 
     private final Image mob1;
     private final Image mob2;
     private final Image mob3;
+
+    /**
+     * Initialise le gestionnaire graphique des ennemis.
+     * Charge les images de base pour les mobs et retient
+     * la couche et la map de vues pour ajouter les ennemis.
+     *
+     * @param enemyLayer  le Pane sur lequel les Pans des ennemis seront ajoutés
+     * @param enemyViews  la map liant chaque Character à son Pane graphique
+     */
 
     public EnemyGraphicsManager(Pane enemyLayer, Map<Character, Pane> enemyViews) {
         this.enemyLayer = enemyLayer;
@@ -34,6 +47,15 @@ public class EnemyGraphicsManager {
         mob3 = new Image(Objects.requireNonNull(getClass().getResource("/assets/image/mob3.png")).toExternalForm());
     }
 
+    /**
+     * Crée et ajoute un ennemi à l’écran.
+     * Définit le sprite, la taille, la barre de vie et
+     * lance l’animation adaptée (mob ou boss).
+     *
+     * @param mob  l’objet Character du modèle représentant l’ennemi
+     * @param x    position X initiale sur le Pane
+     * @param y    position Y initiale sur le Pane
+     */
     public void addEnemy(Character mob, double x, double y) {
         String spritePath = switch (mob.getName()) {
             case "Boss 1" -> "/assets/image/boss1-1.png";
@@ -95,6 +117,11 @@ public class EnemyGraphicsManager {
         }
     }
 
+    /**
+     * Anime un mob de base en alternant trois images à intervalles fixes.
+     *
+     * @param mobView l’ImageView du mob à animer
+     */
     private void animateMob(ImageView mobView) {
         Timeline mobAnimation = new Timeline(
                 new KeyFrame(Duration.seconds(0.3), e -> mobView.setImage(mob1)),
@@ -105,6 +132,14 @@ public class EnemyGraphicsManager {
         mobAnimation.play();
     }
 
+    /**
+     * Anime un boss en alternant deux images.
+     *
+     * @param bossView l’ImageView du boss
+     * @param path1    chemin vers la première image
+     * @param path2    chemin vers la deuxième image
+     * @param speed    intervalle entre les changements en secondes
+     */
     private void animateBoss(ImageView bossView, String path1, String path2, double speed) {
         Image img1 = new Image(Objects.requireNonNull(getClass().getResource(path1)).toExternalForm());
         Image img2 = new Image(Objects.requireNonNull(getClass().getResource(path2)).toExternalForm());
@@ -117,6 +152,15 @@ public class EnemyGraphicsManager {
         anim.play();
     }
 
+    /**
+     * Anime un boss en alternant deux images.
+     *
+     * @param bossView l’ImageView du boss
+     * @param path1    chemin vers la première image
+     * @param path2    chemin vers la deuxième image
+     * @param path3    chemin vers la troisième image
+     * @param speed    intervalle entre les changements en secondes
+     */
     private void animateBoss(ImageView bossView, String path1, String path2, String path3, double speed) {
         Image img1 = new Image(Objects.requireNonNull(getClass().getResource(path1)).toExternalForm());
         Image img2 = new Image(Objects.requireNonNull(getClass().getResource(path2)).toExternalForm());
@@ -131,6 +175,16 @@ public class EnemyGraphicsManager {
         anim.play();
     }
 
+    /**
+     * Anime un boss en alternant deux images.
+     *
+     * @param bossView l’ImageView du boss
+     * @param path1    chemin vers la première image
+     * @param path2    chemin vers la deuxième image
+     * @param path3    chemin vers la troisième image
+     * @param path4    chemin vers la quatrième image
+     * @param speed    intervalle entre les changements en secondes
+     */
     private void animateBoss(ImageView bossView, String path1, String path2, String path3, String path4, double speed) {
         Image img1 = new Image(Objects.requireNonNull(getClass().getResource(path1)).toExternalForm());
         Image img2 = new Image(Objects.requireNonNull(getClass().getResource(path2)).toExternalForm());

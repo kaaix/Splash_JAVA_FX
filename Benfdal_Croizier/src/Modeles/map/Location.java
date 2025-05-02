@@ -1,3 +1,8 @@
+/**
+ * Représente une case (étage) du donjon, avec son nom, sa description,
+ * ses ennemis, son butin, sa difficulté et les directions possibles
+ * pour passer à d’autres étages.
+ */
 package Modeles.map;
 
 import java.util.*;
@@ -22,6 +27,14 @@ public class Location {
     private static final List<Class<? extends Enemy>> PICKED_BOSSES = new ArrayList<>();
 
 
+    /**
+     * Construit une Location avec propriétés entièrement personnalisées.
+     *
+     * @param name        nom de la location (ex. "Floor 1" ou "Boss Floor")
+     * @param description description textuelle de l’emplacement
+     * @param floorLevel  niveau d’étage (détermine la difficulté)
+     * @param exits       liste des directions pour les sorties disponibles
+     */
     public Location(String name, String description, int floorLevel, List<Direction> exits) {
         this.name = name;
         this.description = description;
@@ -33,6 +46,13 @@ public class Location {
         this.enemies = generateEnemies(difficulty, floorLevel);
     }
 
+    /**
+     * Construit une Location en spécifiant seulement l’étage et la description.
+     * Le nom et les sorties par défaut sont générés automatiquement.
+     *
+     * @param floorLevel  numéro d’étage (définit nom et difficulté)
+     * @param description description textuelle de l’emplacement
+     */
     public Location(int floorLevel, String description) {
         this(floorLevel == 10 || floorLevel == 20 || floorLevel == 30 ? "Boss Floor" : "Floor " + floorLevel,
                 description,
@@ -40,30 +60,65 @@ public class Location {
                 Arrays.asList(Direction.values()));
     }
 
+    /**
+     * Retourne le nom de cette location.
+     *
+     * @return le nom de l’étage ou lieu
+     */
     public String getName() {
         return this.name;
     }
 
+    /**
+     * Retourne la description textuelle de cette location.
+     *
+     * @return la description
+     */
     public String getDescription() {
         return this.description;
     }
 
+    /**
+     * Retourne le numéro d’étage associé à cette location.
+     *
+     * @return le niveau d’étage (entier)
+     */
     public int getFloorLevel() {
         return this.floorLevel;
     }
 
+    /**
+     * Retourne la liste des ennemis présents dans cette location.
+     *
+     * @return liste de Character (ennemis)
+     */
     public List<Character> getEnemies() {
         return this.enemies;
     }
 
+    /**
+     * Retourne la difficulté de cette location, dérivée du numéro d’étage.
+     *
+     * @return la difficulté (EASY, NORMAL, HARD, IMPOSSIBLE)
+     */
     public Difficulty getDifficulty() {
         return this.difficulty;
     }
 
+    /**
+     * Retourne la liste des consommables (butin) générés pour cette location.
+     *
+     * @return liste de Consumable
+     */
     public List<Consumable> getLoot() {
         return this.loot;
     }
 
+    /**
+     * Retourne les directions dans lesquelles on peut sortir de cette location.
+     *
+     * @return liste de Direction (copie de la liste interne)
+     */
     public List<Direction> getExitDirections() {
         return new ArrayList<>(this.exits);
     }
@@ -112,6 +167,15 @@ public class Location {
 
         return enemies;
     }
+
+    /**
+     * Génère automatiquement une nouvelle Location pour l’étage suivant,
+     * avec un nombre aléatoire de sorties et un nom par défaut.
+     *
+     * @param from       direction d’où l’on arrive
+     * @param floorLevel numéro d’étage courant
+     * @return nouvelle Location pour l’étage floorLevel+1
+     */
     public static Location generateNextFloor(Direction from, int floorLevel) {
         int exitCount = new Random().nextInt(1, 4);
         List<Direction> exits = new ArrayList<>();
@@ -134,6 +198,10 @@ public class Location {
         return Difficulty.IMPOSSIBLE;
     }
 
+    /**
+     * Affiche dans la console un message d’entrée dans la location.
+     * Signale s’il s’agit d’un étage de boss ou non.
+     */
     public void displayOnEnter() {
         if (floorLevel == 10 || floorLevel == 20 || floorLevel == 30) {
             System.out.println("⚔️ You are entering a BOSS floor!");
@@ -142,6 +210,13 @@ public class Location {
         }
     }
 
+    /**
+     * Retourne la Location cible pour la direction donnée,
+     * si elle a déjà été pré-générée.
+     *
+     * @param dir direction de sortie souhaitée
+     * @return Location correspondante, ou null si non définie
+     */
     public Location getNextLocation(Direction dir) {
         return nextFloors.get(dir);
     }

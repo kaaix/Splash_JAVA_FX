@@ -1,3 +1,9 @@
+/**
+ * Vue de sélection ou création de sauvegardes.
+ * Affiche jusqu’à 3 emplacements de sauvegarde avec
+ * un bouton “jouer” ou “nouvelle partie” et un bouton
+ * “supprimer”. Propose également un retour au menu principal.
+ */
 package Vues.Menu;
 
 import Controleurs.Menu.MenuControleur;
@@ -17,6 +23,15 @@ import java.io.File;
 
 public class SelectSaveMenu extends VBox {
 
+    /**
+     * Construit la vue de sélection de sauvegardes.
+     * Pour chaque slot (1 à 3), affiche un bouton pour
+     * lancer la partie existante ou en créer une nouvelle,
+     * ainsi qu’un bouton pour supprimer la sauvegarde.
+     *
+     * @param controleur le contrôleur de menu permettant
+     *                   de lancer ou supprimer les parties
+     */
     public SelectSaveMenu(MenuControleur controleur) {
         this.setSpacing(30);
         this.setAlignment(Pos.CENTER);
@@ -85,6 +100,13 @@ public class SelectSaveMenu extends VBox {
         this.getChildren().add(retour);
     }
 
+    /**
+     * Crée un bouton au style uniforme pour ce menu.
+     * Applique police, couleur de fond, arrondis et ombre.
+     *
+     * @param text le libellé à afficher sur le bouton
+     * @return un Button JavaFX configuré avec effets visuels
+     */
     private Button createStyledButton(String text) {
         Button button = new Button(text);
         button.setFont(Font.font("Segoe UI Emoji", 18));

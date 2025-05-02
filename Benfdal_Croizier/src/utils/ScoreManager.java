@@ -1,3 +1,8 @@
+/**
+ * Utilitaire pour gérer les scores de parties.
+ * Sauvegarde chaque score (nom, temps) dans un fichier texte
+ * et permet de récupérer les 5 meilleurs temps.
+ */
 package utils;
 
 import java.io.*;
@@ -6,6 +11,12 @@ import java.util.*;
 public class ScoreManager {
     private static final String SCORE_FILE = "Benfdal_Croizier/scores.txt";
 
+    /**
+     * Enregistre un nouveau score à la fin du fichier de scores.
+     *
+     * @param nom    le nom du joueur
+     * @param temps  le temps réalisé en secondes
+     */
     public static void saveScore(String nom, int temps) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(SCORE_FILE, true))) {
             writer.write(nom + "," + temps);
@@ -15,6 +26,11 @@ public class ScoreManager {
         }
     }
 
+    /**
+     * Lit tous les scores depuis le fichier et renvoie les 5 meilleurs (temps croissants).
+     *
+     * @return une liste de chaînes « nom - temps sec » pour les 5 meilleurs scores
+     */
     public static List<String> getTop5() {
         List<String> lignes = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(SCORE_FILE))) {

@@ -1,3 +1,8 @@
+/**
+ * Vue pour le choix du personnage (arme) et du nom de joueur.
+ * Affiche un champ de saisie du nom, trois icônes d’armes (Shooter, Roller, Charger)
+ * avec survol pour voir leurs statistiques, et boutons de validation/retour.
+ */
 package Vues.Menu;
 
 import Controleurs.Menu.ChoixPersoControleur;
@@ -22,6 +27,13 @@ public class ChoixPersoView extends VBox {
 
     private final Label infoLabel = new Label();
 
+    /**
+     * Construit la vue de choix de personnage.
+     * Initialise le titre, le champ de nom, les images d’armes, ainsi que
+     * les handlers de sélection et de validation.
+     *
+     * @param controleur le contrôleur gérant la logique de validation et de navigation
+     */
     public ChoixPersoView(ChoixPersoControleur controleur) {
         this.setSpacing(40);
         this.setAlignment(Pos.CENTER);
@@ -105,6 +117,12 @@ public class ChoixPersoView extends VBox {
         retour.setOnAction(e -> controleur.retourMenu());
     }
 
+    /**
+     * Crée une boîte graphique cliquable contenant l’image d’une arme.
+     *
+     * @param imageView l’ImageView représentant l’arme
+     * @return un VBox centré et stylé pour l’interaction utilisateur
+     */
     private VBox createWeaponBox(ImageView imageView) {
         VBox box = new VBox(imageView);
         box.setAlignment(Pos.CENTER);
@@ -112,6 +130,13 @@ public class ChoixPersoView extends VBox {
         return box;
     }
 
+    /**
+     * Charge une image d’arme depuis les ressources et la configure.
+     *
+     * @param path chemin relatif vers la ressource image (dans /assets/image)
+     * @param size taille désirée (en pixels) pour la largeur et la hauteur
+     * @return un ImageView JavaFX configuré (curseur main, ratio conservé)
+     */
     private ImageView createWeaponImage(String path, int size) {
         ImageView view = new ImageView(new Image(Objects.requireNonNull(getClass().getResource(path)).toExternalForm()));
         view.setFitWidth(size);
@@ -121,6 +146,13 @@ public class ChoixPersoView extends VBox {
         return view;
     }
 
+    /**
+     * Met en avant l’ImageView de l’arme sélectionnée en l’agrandissant,
+     * et remet les autres armes à leur taille normale.
+     *
+     * @param selected l’ImageView de l’arme choisie
+     * @param others   les ImageViews des autres armes à réinitialiser
+     */
     private void highlightWeapon(ImageView selected, ImageView... others) {
         selected.setFitWidth(180);
         selected.setFitHeight(180);
@@ -130,6 +162,11 @@ public class ChoixPersoView extends VBox {
         }
     }
 
+    /**
+     * Affiche dans le label infoLabel les statistiques de l’arme survolée.
+     *
+     * @param weapon l’objet Weapon dont on veut afficher le nom et les stats
+     */
     private void showStats(Weapon weapon) {
         infoLabel.setText("🔫 " + weapon.getDisplayName() + "\n" +
                 I18N.get("choix.attaque") + " " + weapon.getFirePower() + "\n" +
@@ -138,7 +175,11 @@ public class ChoixPersoView extends VBox {
         infoLabel.setVisible(true);
     }
 
-
+    /**
+     * Retourne le Label utilisé pour afficher les informations d’arme.
+     *
+     * @return le Label d’information (visible lors du survol)
+     */
     public Label getInfoLabel() {
         return infoLabel;
     }

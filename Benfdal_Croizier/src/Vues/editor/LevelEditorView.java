@@ -1,4 +1,9 @@
-// LevelEditorView.java
+/**
+ * Vue de l’éditeur de niveaux 2D.
+ * Permet de dessiner la grille, de choisir un outil
+ * (obstacle, spawn joueur, spawn ennemi, étage suivant)
+ * et de charger/sauvegarder des niveaux sous forme JSON.
+ */
 package Vues.editor;
 
 import Modeles.editor.LevelEditorModel;
@@ -19,6 +24,13 @@ import utils.I18N;
 import java.io.File;
 
 public class LevelEditorView extends StackPane {
+    /**
+     * Outils disponibles pour modifier le niveau :
+     * OBSTACLE — placer ou retirer des obstacles,
+     * PLAYER — définir le point de spawn du joueur,
+     * ENEMY — ajouter des positions d’ennemis,
+     * NEXT_FLOOR — positionner la case “étage suivant”.
+     */
     public enum Tool { OBSTACLE, PLAYER, ENEMY, NEXT_FLOOR }
 
     private final LevelEditorModel model;
@@ -29,6 +41,12 @@ public class LevelEditorView extends StackPane {
     private ToggleGroup toolGroup;
     private Label floorLabel;
 
+    /**
+     * Construit la vue de l’éditeur de niveaux.
+     *
+     * @param model      le modèle contenant la taille et les données du niveau
+     * @param controller le contrôleur gérant les actions (clic tile, load/save, etc.)
+     */
     public LevelEditorView(LevelEditorModel model, LevelEditorController controller) {
         this.model = model;
         this.controller = controller;
@@ -109,10 +127,20 @@ public class LevelEditorView extends StackPane {
         redraw();
     }
 
+    /**
+     * Retourne l’outil actuellement sélectionné dans la palette.
+     *
+     * @return l’outil actif (OBSTACLE, PLAYER, ENEMY ou NEXT_FLOOR)
+     */
     public Tool getSelectedTool() {
         return (Tool) toolGroup.getSelectedToggle().getUserData();
     }
 
+    /**
+     * Redessine entièrement le contenu du canvas :
+     * arrière-plan, obstacles, tuiles “next floor”,
+     * spawns joueur et ennemis, en fonction du modèle.
+     */
     public void redraw() {
         GraphicsContext gc = canvas.getGraphicsContext2D();
         // draw background
@@ -156,7 +184,11 @@ public class LevelEditorView extends StackPane {
         }
     }
 
-    /** Update the displayed floor number. */
+    /**
+     * Met à jour l’étiquette affichant le numéro d’étage courant.
+     *
+     * @param floor le numéro de l’étage à afficher
+     */
     public void updateFloorLabel(int floor) {
         floorLabel.setText("" + floor);
     }

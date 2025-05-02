@@ -1,5 +1,10 @@
+/**
+ * Classe utilitaire pour animer les transitions entre scènes
+ * et gérer la sortie de l’application avec un fondu au noir.
+ */
 package utils;
 
+import Modeles.settings.SettingsModel;
 import javafx.animation.FadeTransition;
 import javafx.application.Platform;
 import javafx.scene.Node;
@@ -11,7 +16,15 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 public class TransitionUtils {
-
+    /**
+     * Réalise un fondu au noir sur la scène courante, remplace
+     * le contenu par le nœud fourni, puis refait un fondu vers
+     * transparent. À la fin, ré-applique les paramètres utilisateur
+     * (langue, plein écran, résolution).
+     *
+     * @param stage      la fenêtre JavaFX à animer
+     * @param newContent le nouveau nœud à afficher dans la scène
+     */
     public static void fadeToScene(Stage stage, Node newContent) {
         if (!(stage.getScene().getRoot() instanceof StackPane root)) {
             System.out.println("❗ Le root n’est pas un StackPane, abandon de la transition");
@@ -37,13 +50,35 @@ public class TransitionUtils {
             FadeTransition fadeIn = new FadeTransition(Duration.millis(400), overlay);
             fadeIn.setFromValue(1);
             fadeIn.setToValue(0);
-            fadeIn.setOnFinished(f -> root.getChildren().remove(overlay));
+                        fadeIn.setOnFinished(f -> {
+                                // 1) on enlève l’overlay
+                                        root.getChildren().remove(overlay);
+
+                                        // 2) ré-applique les paramètres utilisateurs
+                                                SettingsModel settings = SettingsModel.load();
+                                I18N.setLangue(settings.getLangue());
+                                // récupère le Stage à partir du root
+                                        Stage s = (Stage) root.getScene().getWindow();
+                                s.setFullScreenExitHint("");
+                                s.setFullScreen(settings.isFullscreen());
+                                if (!settings.isFullscreen()) {
+                                        String[] dims = settings.getResolution().split("x");
+                                        s.setWidth(Double.parseDouble(dims[0]));
+                                        s.setHeight(Double.parseDouble(dims[1]));
+                                    }
+                            });
             fadeIn.play();
         });
 
         fadeOut.play();
     }
 
+    /**
+     * Réalise un fondu au noir complet sur la scène courante,
+     * puis quitte l’application lorsque l’animation est terminée.
+     *
+     * @param stage la fenêtre JavaFX sur laquelle appliquer le fondu
+     */
     public static void fadeToBlackAndExit(Stage stage) {
         Scene scene = stage.getScene();
         StackPane root = (StackPane) scene.getRoot();

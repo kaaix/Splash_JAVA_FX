@@ -1,3 +1,8 @@
+/**
+ * Vue des paramètres généraux de l'application.
+ * Permet de configurer le volume audio, le plein écran, la résolution,
+ * la langue et les touches de contrôle.
+ */
 package Vues.Menu;
 
 import Controleurs.Menu.SettingsControleur;
@@ -18,11 +23,20 @@ import utils.SoundEffects;
 
 import java.util.Locale;
 
+
 public class SettingsView extends StackPane {
-
+    private final SettingsControleur controleur;
     private final StackPane overlayPane = new StackPane();
+    private final HBox resolutionBox;
 
+    /**
+     * Construit la vue des paramètres et initie les liaisons avec le contrôleur.
+     *
+     * @param controleur le contrôleur gérant la logique et la persistance des paramètres
+     */
     public SettingsView(SettingsControleur controleur) {
+        this.controleur = controleur;
+
         VBox contentBox = new VBox();
         contentBox.setSpacing(30);
         contentBox.setAlignment(Pos.CENTER);
@@ -35,6 +49,8 @@ public class SettingsView extends StackPane {
         Label titre = new Label(I18N.get("settings.title"));
         titre.setFont(Font.font("Orbitron", 28));
         titre.setTextFill(Color.WHITE);
+
+        resolutionBox = createResolutionBox();
 
         // Volume musique
         Label musicLabel = new Label(I18N.get("music.volume"));
@@ -72,6 +88,9 @@ public class SettingsView extends StackPane {
         fullscreenNo.setToggleGroup(fullscreenGroup);
         if (controleur.isFullscreen()) fullscreenYes.setSelected(true);
         else fullscreenNo.setSelected(true);
+
+        resolutionBox.visibleProperty().bind(fullscreenNo.selectedProperty());
+        resolutionBox.managedProperty().bind(fullscreenNo.selectedProperty());
 
         fullscreenGroup.selectedToggleProperty().addListener((obs, oldToggle, newToggle) -> {
             if (newToggle != null) {
@@ -136,6 +155,7 @@ public class SettingsView extends StackPane {
                 sfxLabel, sfxSlider,
                 musicLabel, musicSlider,
                 fullscreenBox,
+                resolutionBox,
                 touchesLabel, configTouchesBtn,
                 langueBox,
                 retour
@@ -147,6 +167,11 @@ public class SettingsView extends StackPane {
         this.getChildren().addAll(contentBox, overlayPane);
     }
 
+    /**
+     * Ouvre une fenêtre modale pour configurer les touches du clavier.
+     *
+     * @param controleur le contrôleur à utiliser pour appliquer les modifications de touches
+     */
     private void ouvrirFenetreTouches(SettingsControleur controleur) {
         VBox popup = new VBox(15);
         popup.setAlignment(Pos.CENTER);
@@ -253,6 +278,12 @@ public class SettingsView extends StackPane {
         new ParallelTransition(fadeIn, scaleUp).play();
     }
 
+    /**
+     * Crée un bouton stylisé pour l'interface des paramètres.
+     *
+     * @param text le libellé du bouton
+     * @return un Button JavaFX configuré avec style et effets visuels
+     */
     private Button createStyledButton(String text) {
         Button button = new Button(text);
         button.setFont(Font.font("Arial", 16));
@@ -268,6 +299,12 @@ public class SettingsView extends StackPane {
         return button;
     }
 
+    /**
+     * Crée un ToggleButton stylisé pour les choix (ex. plein écran, langue).
+     *
+     * @param text le libellé du toggle
+     * @return un ToggleButton JavaFX configuré avec styles et comportements au survol
+     */
     private ToggleButton createToggle(String text) {
         ToggleButton button = new ToggleButton(text);
         button.setFont(Font.font("Arial", 14));
@@ -297,4 +334,27 @@ public class SettingsView extends StackPane {
         });
         return button;
     }
+
+    /**
+     * Crée la ligne de sélection de résolution (deux choix minimaux).
+     *
+     * @return un HBox contenant un Label et un ComboBox pour choisir la résolution
+     */
+    private HBox createResolutionBox() {
+                Label lbl = new Label(I18N.get("settings.resolution"));
+                lbl.setFont(Font.font("Arial", 16));
+                lbl.setTextFill(Color.WHITE);
+
+                        ComboBox<String> combo = new ComboBox<>();
+                combo.getItems().addAll("1280x720", "1920x1080");
+                combo.setValue(controleur.getResolution());
+                combo.setOnAction(e -> {
+                        controleur.setResolution(combo.getValue());
+                        controleur.sauvegarder();
+                    });
+
+                        HBox box = new HBox(10, lbl, combo);
+                box.setAlignment(Pos.CENTER);
+                return box;
+            }
 }

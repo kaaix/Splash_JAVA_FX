@@ -1,3 +1,8 @@
+/**
+ * Vue affichée lorsque la partie est terminée en échec.
+ * Affiche un écran “Game Over” et propose un bouton
+ * pour revenir au menu principal.
+ */
 package Vues.game;
 
 import Controleurs.Menu.MenuControleur;
@@ -14,6 +19,12 @@ import utils.I18N;
 import utils.TransitionUtils;
 
 public class GameOverView extends StackPane {
+    /**
+     * Construit la vue Game Over.
+     *
+     * @param stage la fenêtre principale de l’application, utilisée
+     *              pour binds de taille et navigation vers le menu
+     */
     public GameOverView(Stage stage) {
         // Fond noir et centrage global
         this.setStyle("-fx-background-color: black;");

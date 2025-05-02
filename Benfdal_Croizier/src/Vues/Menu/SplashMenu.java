@@ -1,3 +1,8 @@
+/**
+ * Vue principale du menu de démarrage (Splash Menu) de l'application.
+ * Affiche le logo, les boutons de navigation (Play, Settings, Level Editor, Quitter)
+ * et délègue les actions utilisateur au contrôleur MenuControleur associé.
+ */
 package Vues.Menu;
 
 import Controleurs.Menu.MenuControleur;
@@ -18,6 +23,12 @@ import utils.I18N; // ← AJOUT I18N
 import java.io.File;
 
 public class SplashMenu extends VBox {
+
+    /**
+     * Construit la vue du Splash Menu et initialise les composants graphiques.
+     *
+     * @param controleur instance du contrôleur de menu, utilisé pour gérer les actions utilisateur
+     */
 
     public SplashMenu(MenuControleur controleur) {
         this.setSpacing(20);
@@ -73,6 +84,13 @@ public class SplashMenu extends VBox {
 
     }
 
+
+    /**
+     * Crée un bouton stylisé pour le menu avec ombre portée et changements de style au survol.
+     *
+     * @param text le texte à afficher sur le bouton
+     * @return un nouvel objet Button configuré
+     */
     private Button createStyledButton(String text) {
         Button button = new Button(text);
         button.setFont(Font.font("Arial", 20));

@@ -1,3 +1,8 @@
+/**
+ * Vue principale du jeu. Affiche la carte, le héros, les ennemis,
+ * les barres de vie et statistiques du héros, l’étage et la difficulté.
+ * Gère aussi le menu pause et la mise à jour des entités.
+ */
 package Vues.game;
 
 import Controleurs.Game.GameControleur;
@@ -59,7 +64,11 @@ public class GameView extends StackPane {
     private PlayerGraphicsManager playerGraphics;
     private EnemyGraphicsManager enemyGraphicsManager;
 
-
+    /**
+     * Construit la vue de jeu principale.
+     *
+     * @param model le GameModel contenant l’état du niveau, du héros et des ennemis
+     */
     public GameView(GameModel model) {
         this.model = model; // ✅ affecte le modèle !
         this.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
@@ -233,7 +242,12 @@ public class GameView extends StackPane {
 
     }
 
-    // Méthode pour mettre à jour la barre de vie
+    /**
+     * Met à jour la barre de vie et son label.
+     *
+     * @param currentHealth points de vie actuels (clampés entre 0 et maxHealth)
+     * @param maxHealth points de vie maximum
+     */
     public void updateHealth(int currentHealth, int maxHealth) {
         int clampedCurrent = Math.max(0, Math.min(currentHealth, maxHealth)); // ✅ sécurité
         double healthPercentage = (double) clampedCurrent / maxHealth;
@@ -241,7 +255,12 @@ public class GameView extends StackPane {
         hpText.setText(I18N.get("gameview.hp") + ": " + clampedCurrent + " / " + maxHealth);
     }
 
-
+    /**
+     * Positionne le joueur et la hitbox, met à jour la barre de vie et les stats.
+     *
+     * @param x position X du joueur
+     * @param y position Y du joueur
+     */
     public void setPlayerPosition(double x, double y) {
         player.setLayoutX(x);
         player.setLayoutY(y);
@@ -263,11 +282,21 @@ public class GameView extends StackPane {
 
     }
 
+    /**
+     * Supprime tous les ennemis graphiques de la vue.
+     */
     public void clearEnemies() {
         enemyLayer.getChildren().clear();
         enemyViews.clear();
     }
 
+    /**
+     * Ajoute la représentation graphique d’un ennemi.
+     *
+     * @param mob le Character du modèle à afficher
+     * @param x position X initiale de l’ennemi
+     * @param y position Y initiale de l’ennemi
+     */
     public void addEnemy(Character mob, double x, double y) {
         enemyGraphicsManager.addEnemy(mob, x, y);
     }
@@ -279,7 +308,9 @@ public class GameView extends StackPane {
         }
     }
 
-
+    /**
+     * Met à jour le label indiquant l’étage et la difficulté courants.
+     */
     public void updateFloorLabel() {
         labelEtage.setText(
                 I18N.get("gameview.floor") + " " + model.getLocationActuelle().getFloorLevel() +
@@ -287,21 +318,33 @@ public class GameView extends StackPane {
         );
     }
 
-
+    /**
+     * Retourne le Pane graphique d’un ennemi donné.
+     *
+     * @param mob le Character de l’ennemi
+     * @return le Pane associé, ou null si non trouvé
+     */
     public Pane getEnemyView(Character mob) {
         return enemyViews.get(mob);
     }
 
-
+    /**
+     * Affiche la superposition de verrouillage de la carte.
+     */
     public void verrouillerMap() {
         mapLockView.setVisible(true);
     }
 
+    /**
+     * Masque la superposition de verrouillage de la carte.
+     */
     public void deverrouillerMap() {
         mapLockView.setVisible(false);
     }
 
-
+    /**
+     * Met à jour les labels de vitesse, attaque et crit chance du héros.
+     */
     public void updateStatsLabel() {
         Hero hero = model.getHero();
         if (hero != null) {
@@ -312,6 +355,9 @@ public class GameView extends StackPane {
         }
     }
 
+    /**
+     * Lance l’animation de clignotement pour indiquer l’invulnérabilité.
+     */
     public void startImmunityBlink() {
         Timeline blink = new Timeline(
                 new KeyFrame(Duration.millis(100), e -> player.setOpacity(0.3)),
@@ -322,6 +368,13 @@ public class GameView extends StackPane {
         blink.play();
     }
 
+    /**
+     * Affiche la zone d’attaque selon la direction et l’arme du héros.
+     *
+     * @param x position X du joueur
+     * @param y position Y du joueur
+     * @param direction "up", "down", "left" ou "right"
+     */
     public void afficherZoneAttaqueDirectionnelle(double x, double y, String direction) {
         Weapon weapon = model.getHero().getWeapon();
         double portee = weapon.getPortee();  // La hauteur de la zone
@@ -364,10 +417,18 @@ public class GameView extends StackPane {
         attackZone.setVisible(true);
     }
 
+    /**
+     * Masque la zone d’attaque affichée.
+     */
     public void cacherZoneAttaque() {
         attackZone.setVisible(false);
     }
 
+    /**
+     * Retourne le Pane contenant les ennemis.
+     *
+     * @return le layer des ennemis
+     */
     public Pane getEnemyLayer() {
         return enemyLayer;
     }
@@ -382,6 +443,9 @@ public class GameView extends StackPane {
 
     }
 
+    /**
+     * Affiche le menu pause superposé sur la vue de jeu.
+     */
     public void showPauseMenu() {
         if (pauseOverlay != null && this.getChildren().contains(pauseOverlay)) return;
 
@@ -450,6 +514,9 @@ public class GameView extends StackPane {
     }
 
 
+    /**
+     * Ferme le menu pause et remet le focus sur le jeu.
+     */
     public void hidePauseMenu() {
         if (pauseOverlay != null) {
             this.getChildren().remove(pauseOverlay);
@@ -459,7 +526,9 @@ public class GameView extends StackPane {
         this.requestFocus(); // remet le focus au jeu
     }
 
-
+    /**
+     * Active la détection de la touche Échap pour basculer le menu pause.
+     */
     public void activerEcouteClavier() {
         this.setFocusTraversable(true);
         this.requestFocus();
@@ -477,15 +546,29 @@ public class GameView extends StackPane {
 
     }
 
+    /**
+     * Indique si le menu pause est ouvert.
+     *
+     * @return true si visible, false sinon
+     */
     public boolean isPauseMenuVisible() {
         return isPauseMenuVisible;
     }
 
-
+    /**
+     * Associe le contrôleur logique de la partie à cette vue.
+     *
+     * @param controleur le GameControleur à utiliser
+     */
     public void setControleur(GameControleur controleur) {
         this.controleur = controleur;
     }
 
+    /**
+     * Affiche et anime la barre de cooldown sur la durée donnée.
+     *
+     * @param seconds durée du cooldown en secondes
+     */
     public void afficherCooldown(double seconds) {
         cooldownBar.setVisible(true);
         cooldownBar.setWidth(100); // pleine barre
@@ -500,10 +583,20 @@ public class GameView extends StackPane {
         cooldownAnim.play();
     }
 
+    /**
+     * Retire la vue graphique d’un ennemi précis.
+     *
+     * @param mob le Character de l’ennemi à supprimer
+     */
     public void removeEnemyView(Character mob) {
         enemyViews.remove(mob);
     }
 
+    /**
+     * Retourne le gestionnaire d’animations et sprites du joueur.
+     *
+     * @return l’instance de PlayerGraphicsManager
+     */
     public PlayerGraphicsManager getPlayerGraphics() {
         return playerGraphics;
     }

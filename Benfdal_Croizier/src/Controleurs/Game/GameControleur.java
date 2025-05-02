@@ -1,4 +1,10 @@
-// Controleurs/Game/GameControleur.java
+/**
+ * Affiche la vue de victoire avec un message personnalisé
+ * et le score du joueur, puis effectue un fondu de transition.
+ *
+ * @param playerName   nom du joueur victorieux
+ * @param scoreSeconds score réalisé en secondes
+ */
 package Controleurs.Game;
 
 import Controleurs.Menu.MenuControleur;
@@ -57,7 +63,14 @@ public class GameControleur {
     private long dernierCoupHero = 0;
     private ChoiceControleur choiceController;
 
-
+    /**
+     * Crée un nouveau contrôleur de jeu.
+     * Charge les bindings clavier depuis les paramètres,
+     * initialise le modèle et la vue de jeu,
+     * et met en place les listeners pour le joueur et les ennemis.
+     *
+     * @param stage la fenêtre JavaFX principale (Stage)
+     */
     public GameControleur(Stage stage) {
         this.stage = stage;
 
@@ -131,13 +144,25 @@ public class GameControleur {
         return null;
     }
 
+    /**
+     * Retourne le nœud JavaFX à insérer dans la scène pour afficher le jeu.
+     *
+     * @return le Parent racine de la vue de jeu
+     */
     public Parent getVue() {
         return vue;
     }
 
+    /**
+     * Notifie la vue du changement de porte sélectionnée
+     * lors de la transition vers le choix de bonus.
+     *
+     * @param selectedDoor indice de la porte sélectionnée (0 à 2)
+     */
     public void updateSelection(int selectedDoor) {
         System.out.println("🚪 Porte sélectionnée : " + selectedDoor);
     }
+
 
     private void startMouvementLoop() {
         mouvementLoop = new Timeline(new KeyFrame(Duration.millis(40), e -> {
@@ -193,6 +218,11 @@ public class GameControleur {
         mouvementLoop.play();
     }
 
+    /**
+     * Recharge et applique les préférences utilisateur :
+     * langue, volumes audio et mode plein écran.
+     * Met à jour également l’affichage (étage, raccourcis).
+     */
     public void updateSettings() {
         SettingsModel settings = SettingsModel.load();
 
@@ -211,7 +241,10 @@ public class GameControleur {
         stage.setFullScreen(settings.isFullscreen());
     }
 
-
+    /**
+     * Passe à la vue de sélection de bonus après avoir atteint
+     * la porte, en initialisant les choix et en animant la transition.
+     */
     private void showChoiceView() {
         choiceController = new ChoiceControleur(this);         // 👈 création
         choiceController.initializeBonusChoices();              // 👈 logique métier
@@ -219,11 +252,11 @@ public class GameControleur {
         TransitionUtils.fadeToScene(stage, choiceView.getVue());
     }
 
-
-
+    /**
+     * Met à jour la position du joueur, recharge la carte
+     * et place graphiquement les ennemis pour le nouvel étage.
+     */
     public void updateFloor() {
-
-
         model.setPlayerPosition(13 * model.getTailleCase(), 13 * model.getTailleCase());
         Hero hero = model.getHero();
         if (!partieChargee) {
@@ -382,6 +415,10 @@ public class GameControleur {
         enemyLoop.play();
     }
 
+    /**
+     * Recharge les raccourcis clavier depuis les paramètres
+     * et met à jour la map interne des bindings.
+     */
     public void reloadKeyBindings() {
         keyBindings.clear();
         SettingsModel.load().getTouches().forEach((action, keyName) -> {
@@ -394,7 +431,10 @@ public class GameControleur {
         System.out.println("✅ Raccourcis clavier rechargés !");
     }
 
-
+    /**
+     * Interrompt la partie en cours, rejoue la musique de menu
+     * et revient au SplashMenu avec une transition.
+     */
     public void quitterJeu() {
         MenuControleur mc = new MenuControleur(stage);
         mc.jouerMusiqueMenu();
@@ -403,6 +443,12 @@ public class GameControleur {
         TransitionUtils.fadeToScene(stage, mc.creerVueAvecFond(menu));
     }
 
+    /**
+     * Retourne le modèle de la partie, contenant état du niveau,
+     * position du joueur et liste des ennemis.
+     *
+     * @return l’instance de GameModel utilisée
+     */
     public GameModel getModel() {
         return model;
     }
@@ -508,6 +554,12 @@ public class GameControleur {
 
     }
 
+    /**
+     * Sauvegarde l’état actuel du jeu (héros, inventaire, chrono)
+     * dans le fichier spécifié.
+     *
+     * @param nomFichier chemin où écrire la sauvegarde
+     */
     public void sauvegarderPartie(String nomFichier) {
         try {
             Hero hero = model.getHero();
@@ -547,6 +599,13 @@ public class GameControleur {
         }
     }
 
+    /**
+     * Charge une partie depuis un objet SaveData.
+     * Reconstruit le héros, l’inventaire, le chrono et les ennemis,
+     * puis met à jour la vue et le modèle.
+     *
+     * @param data objet de sauvegarde contenant tous les états
+     */
     public void chargerDepuisSave(SaveData data) {
         this.partieChargee = true;
 
@@ -589,21 +648,47 @@ public class GameControleur {
         this.partieChargee = false;
     }
 
+    /**
+     * Définit le nom de fichier à utiliser pour la prochaine sauvegarde.
+     *
+     * @param nom chemin du fichier de sauvegarde
+     */
     public void setNomFichierSauvegarde(String nom) {
         this.nomFichierSauvegarde = nom;
     }
 
+    /**
+     * Retourne le nom de fichier actuellement configuré
+     * pour la sauvegarde.
+     *
+     * @return le chemin du fichier de sauvegarde
+     */
     public String getNomFichierSauvegarde() {
         return nomFichierSauvegarde;
     }
 
+    /**
+     * Définit le nom du héros pour la partie en cours.
+     *
+     * @param nomHero le nom choisi par l’utilisateur
+     */
     public void setNomHero(String nomHero) {
         this.nomHero = nomHero;
     }
+
+    /**
+     * Configure l’arme du héros avant le démarrage de la partie.
+     *
+     * @param nomArme identifiant/nom de l’arme sélectionnée
+     */
     public void setNomArme(String nomArme) {
         this.nomArme = nomArme;
     }
 
+    /**
+     * Crée et place le héros dans le modèle avec nom et arme réglés,
+     * puis lance la mise à jour de l’étage et de la position initiale.
+     */
     public void initialiserHero() {
         Weapon weapon = nomArme != null ? Weapon.parseFromString(nomArme) : Weapon.parseFromString("Shooter");
         String nom = nomHero != null ? nomHero : "HeroName";

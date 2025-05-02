@@ -1,3 +1,9 @@
+/**
+ * Vue affichée lorsque le joueur remporte une partie.
+ * Affiche un message de félicitations, le nom et le score du joueur,
+ * sauvegarde automatiquement le score, propose un bouton de retour
+ * au menu principal et affiche le Top 5 des meilleurs scores.
+ */
 package Vues.game;
 
 import Controleurs.Menu.MenuControleur;
@@ -17,6 +23,13 @@ import utils.TransitionUtils;
 import java.util.List;
 
 public class VictoryView extends StackPane {
+    /**
+     * Construit la vue de victoire.
+     *
+     * @param stage         la fenêtre principale de l’application
+     * @param playerName    le nom du joueur ayant gagné
+     * @param scoreSeconds  le score obtenu (en secondes)
+     */
     public VictoryView(Stage stage, String playerName, int scoreSeconds) {
         this.setStyle("-fx-background-color: black;");
         this.setAlignment(Pos.CENTER);
