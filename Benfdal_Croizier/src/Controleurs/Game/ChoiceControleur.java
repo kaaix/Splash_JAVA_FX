@@ -31,6 +31,8 @@ public class ChoiceControleur {
                 System.err.println("❌ Touche invalide dans settings.conf : " + keyName);
             }
         });
+
+
     }
 
     public void selectLeftDoor() {
@@ -82,5 +84,21 @@ public class ChoiceControleur {
         Consumable selectedBonus = bonusChoices.get(selectedDoor);
         gameController.getModel().getHero().addConsumable(selectedBonus);
         gameController.updateFloor();
+    }
+
+    public Consumable getBonusAt(int index) {
+        return bonusChoices.get(index);
+    }
+
+    public String getBonusDisplayName(int index) {
+        return bonusChoices.get(index).getDisplayName();
+    }
+
+    public String getBonusDescription(int index) {
+        return bonusChoices.get(index).getDescription();
+    }
+
+    public String getBonusImageName(int index) {
+        return bonusChoices.get(index).getClass().getSimpleName() + ".png";
     }
 }

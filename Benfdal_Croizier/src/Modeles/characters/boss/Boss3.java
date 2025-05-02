@@ -1,11 +1,12 @@
 package Modeles.characters.boss;
 
 import Modeles.characters.Character;
+import Modeles.characters.Enemy;
 
-public class Boss3 extends Character {
+public class Boss3 extends Enemy {
     
     public Boss3() {
-        super("Boss 3", 30, 35, 20);
+        super("Boss 3", 300, 80, 200);
     }
 
 }

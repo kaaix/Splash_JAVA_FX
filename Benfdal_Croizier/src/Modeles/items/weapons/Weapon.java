@@ -5,19 +5,21 @@ import Modeles.items.Item;
 public class Weapon extends Item {
 
     protected int firePower;
-    protected float fireRate;
+    protected double fireRate;
+    private int portee;
 
-    public Weapon(String displayName, String description, int firePower, float fireRate) {
+    public Weapon(String displayName, String description, int firePower, double fireRate,int portee) {
         super(displayName, description);
         this.firePower = firePower;
         this.fireRate = fireRate;
+        this.portee = portee;
     }
 
     public int getFirePower() {
         return this.firePower;
     }
 
-    public float getFireRate() {
+    public double getFireRate() {
         return this.fireRate;
     }
     
@@ -29,4 +31,9 @@ public class Weapon extends Item {
             default: return null;
         }
     }
+
+    public int getPortee() {
+        return this.portee;
+    }
+
 }

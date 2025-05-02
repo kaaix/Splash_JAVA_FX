@@ -17,6 +17,8 @@ public abstract class Consumable extends Item {
 
     public abstract void useOn(Character character);
 
+    protected boolean alreadyApplied = false;
+
     public static Consumable getRandomConsumable() {
         List<Consumable> possibility = new ArrayList<Consumable>();
         Collections.addAll(possibility, 
@@ -35,4 +37,41 @@ public abstract class Consumable extends Item {
         return res;
     }
 
+    public boolean isAlreadyApplied() {
+        return alreadyApplied;
+    }
+
+    public void markAsApplied() {
+        this.alreadyApplied = true;
+    }
+
+    public static Consumable parseFromName(String name) {
+        if (name.startsWith("LuckBoost:")) {
+            int value = Integer.parseInt(name.split(":")[1]);
+            return new LuckBoost(value);
+        }
+
+        if (name.startsWith("AttackPowerBoost:")) {
+            int value = Integer.parseInt(name.split(":")[1]);
+            return new AttackPowerBoost(value);
+        }
+
+        if (name.startsWith("SpeedBoost:")) {
+            int value = Integer.parseInt(name.split(":")[1]);
+            return new SpeedBoost(value);
+        }
+
+        if (name.startsWith("HealthBoost:")) {
+            int value = Integer.parseInt(name.split(":")[1]);
+            return new HealthBoost(value);
+        }
+
+        return null;
+    }
+
+
+
+    public void setAlreadyApplied(boolean b) {
+        this.alreadyApplied = b;
+    }
 }

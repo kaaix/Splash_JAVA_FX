@@ -23,4 +23,8 @@ public abstract class Item {
         return displayName;
     }
 
+
+    public String getName() {
+        return this.getClass().getSimpleName(); // ex : AttackBoost
+    }
 }

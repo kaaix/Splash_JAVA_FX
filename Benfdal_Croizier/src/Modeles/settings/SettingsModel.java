@@ -100,4 +100,16 @@ public class SettingsModel {
 
     public Map<String, String> getTouches() { return touches; }
     public void setTouches(Map<String, String> touches) { this.touches = touches; }
+
+    public void resetTouchesParDefaut() {
+        Map<String, String> defaut = Map.of(
+                "moveUp", "Z",
+                "moveDown", "S",
+                "moveLeft", "Q",
+                "moveRight", "D"
+        );
+        this.touches.clear();
+        this.touches.putAll(defaut);
+    }
+
 }

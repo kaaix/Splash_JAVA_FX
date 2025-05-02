@@ -32,9 +32,9 @@ public class ChoiceView {
     private final Map<Character, ImageView> enemyViews = new HashMap<>();
 
 
-    public ChoiceView(Stage stage, GameControleur gameController) {
+    public ChoiceView(Stage stage, ChoiceControleur choiceController) {
         this.stage = stage;
-        this.choiceController = new ChoiceControleur(gameController);
+        this.choiceController = choiceController; // ✅ injecté de l'extérieur
         this.root = buildRoot();
     }
 
@@ -82,7 +82,6 @@ public class ChoiceView {
         updateArrowSelection();
 
         // --- Bonus ---
-        choiceController.initializeBonusChoices();
 
         for (int i = 0; i < 3; i++) {
             Consumable bonus = choiceController.getBonusChoices().get(i);

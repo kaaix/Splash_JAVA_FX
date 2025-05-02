@@ -44,8 +44,9 @@ public abstract class Character {
     }
 
     public void addHealth(int val) {
-        this.health += val;
+        this.health = Math.min(this.health + val, this.maxHealth); // ✅ ne jamais dépasser le max
     }
+
 
     public void addAttackPower(int val) {
         this.attackPower += val;
@@ -72,7 +73,7 @@ public abstract class Character {
 
     public void resetStats() {
         this.health = maxHealth;
-        this.attackPower = 100;
+        this.attackPower = 0;
         this.speed = 100;
         this.critChance = 0;
     }
@@ -81,6 +82,21 @@ public abstract class Character {
         return maxHealth;
     }
 
+    public void addMaxHealth(int val) {
+        this.maxHealth += val;
+    }
 
+
+    public void takeDamage(int amount) {
+        this.health = Math.max(0, this.health - amount);
+    }
+
+    public void setHealth(int health) {
+        this.health = Math.max(0, Math.min(health, this.maxHealth));
+    }
+
+    public void setMaxHealth(int val) {
+        this.maxHealth = val;
+    }
 
 }

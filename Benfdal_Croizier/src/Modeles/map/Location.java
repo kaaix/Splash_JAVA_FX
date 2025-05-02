@@ -1,16 +1,10 @@
 package Modeles.map;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Map;
-import java.util.HashMap;
+import java.util.*;
 import Modeles.characters.Character;
 import Modeles.characters.Enemy;
+import Modeles.characters.boss.*;
 import Modeles.items.consumables.Consumable;
-
-import java.awt.Point;
 
 public class Location {
     private Map<Direction, Location> nextFloors = new HashMap<>();
@@ -22,23 +16,28 @@ public class Location {
     protected List<Character> enemies;
     protected List<Direction> exits;
 
+    private static final List<Class<? extends Enemy>> AVAILABLE_BOSSES = new ArrayList<>(List.of(
+            Boss1.class, Boss2.class, Boss3.class
+    ));
+    private static final List<Class<? extends Enemy>> PICKED_BOSSES = new ArrayList<>();
+
+
     public Location(String name, String description, int floorLevel, List<Direction> exits) {
         this.name = name;
         this.description = description;
         this.floorLevel = floorLevel;
         this.difficulty = difficultyFromFloorLevel(floorLevel);
+        this.exits = exits;
 
         this.loot = Consumable.getRandomConsumable(1);
-        this.enemies = Location.generateEnemies(difficulty);
-
-        this.exits = exits;
+        this.enemies = generateEnemies(difficulty, floorLevel);
     }
 
     public Location(int floorLevel, String description) {
-        this.floorLevel = floorLevel;
-        this.description = description;
-        this.difficulty = difficultyFromFloorLevel(floorLevel);
-        this.enemies = Location.generateEnemies(difficulty);
+        this(floorLevel == 10 || floorLevel == 20 || floorLevel == 30 ? "Boss Floor" : "Floor " + floorLevel,
+                description,
+                floorLevel,
+                Arrays.asList(Direction.values()));
     }
 
     public String getName() {
@@ -66,46 +65,66 @@ public class Location {
     }
 
     public List<Direction> getExitDirections() {
-        return new ArrayList<Direction>(this.exits);
+        return new ArrayList<>(this.exits);
     }
 
-    private static List<Character> generateEnemies(Difficulty difficulty) {
+    private static List<Character> generateEnemies(Difficulty difficulty, int floorLevel) {
         List<Character> enemies = new ArrayList<>();
-        int enemyCount;
+        Random random = new Random();
 
-        if (difficulty == Difficulty.EASY) {
-            enemyCount = 1; // Forcer au moins un ennemi même à l’étage 1
-        } else if (difficulty == Difficulty.NORMAL) {
-            enemyCount = 2;
+        if (floorLevel == 10 || floorLevel == 20) {
+            List<Class<? extends Enemy>> candidates = new ArrayList<>(AVAILABLE_BOSSES);
+            candidates.removeAll(PICKED_BOSSES);
+
+            if (!candidates.isEmpty()) {
+                Class<? extends Enemy> bossClass = candidates.get(random.nextInt(candidates.size()));
+                PICKED_BOSSES.add(bossClass);
+
+                try {
+                    enemies.add(bossClass.getDeclaredConstructor().newInstance());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.err.println("❌ Tous les boss ont déjà été utilisés !");
+            }
+
+        } else if (floorLevel == 30) {
+            enemies.add(new FinalBoss());
+
         } else {
-            enemyCount = 3;
-        }
+            int enemyCount = switch (difficulty) {
+                case EASY -> 1;
+                case NORMAL -> 2;
+                default -> 3;
+            };
 
-        for (int i = 0; i < enemyCount; i++) {
-            int hp = new Random().nextInt(50) + 50;
-            int attack = new Random().nextInt(10) + 5;
-            int speed = (difficulty == Difficulty.HARD) ? 50 : 30;
+            Enemy base = switch (difficulty) {
+                case EASY -> Enemy.enemy1;
+                case NORMAL -> Enemy.enemy2;
+                default -> Enemy.enemy3; // HARD ou IMPOSSIBLE
+            };
 
-            enemies.add(new Enemy("Enemy_" + (i + 1), hp, attack, speed));
+            for (int i = 0; i < enemyCount; i++) {
+                enemies.add(new Enemy("Enemy_" + (i + 1), base.getHealth(), base.getAttackPower(), base.getSpeed()));
+            }
         }
 
         return enemies;
     }
-
     public static Location generateNextFloor(Direction from, int floorLevel) {
         int exitCount = new Random().nextInt(1, 4);
-        List<Direction> exits = new ArrayList<Direction>();
-        List<Direction> directions = new ArrayList<Direction>(Arrays.asList(Direction.values()));
+        List<Direction> exits = new ArrayList<>();
+        List<Direction> directions = new ArrayList<>(Arrays.asList(Direction.values()));
+
         while (exitCount > 0) {
             int ind = new Random().nextInt(directions.size());
             exits.add(directions.get(ind));
             directions.remove(ind);
             exitCount--;
         }
-        if (floorLevel == 9 || floorLevel == 19 || floorLevel == 29) {
-            return new BossLocation("Boss floor", "A boss floor", floorLevel + 1, exits);
-        }
-        return new Location("Location", "A floor", floorLevel + 1, exits);
+
+        return new Location("Generated Floor", "Auto-generated", floorLevel + 1, exits);
     }
 
     private static Difficulty difficultyFromFloorLevel(int floorLevel) {
@@ -115,10 +134,12 @@ public class Location {
         return Difficulty.IMPOSSIBLE;
     }
 
-
-
     public void displayOnEnter() {
-        System.out.println(String.format("You are on floor %d, on %s difficulty!", this.floorLevel, this.difficulty));
+        if (floorLevel == 10 || floorLevel == 20 || floorLevel == 30) {
+            System.out.println("⚔️ You are entering a BOSS floor!");
+        } else {
+            System.out.printf("You are on floor %d, difficulty: %s%n", floorLevel, difficulty);
+        }
     }
 
     public Location getNextLocation(Direction dir) {

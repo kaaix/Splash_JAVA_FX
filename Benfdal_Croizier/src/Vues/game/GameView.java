@@ -1,24 +1,33 @@
 package Vues.game;
 
+import Controleurs.Game.GameControleur;
+import Controleurs.Menu.MenuControleur;
+import Controleurs.Menu.SettingsControleur;
 import Modeles.characters.Character;
 import Modeles.game.GameModel;
 import Modeles.characters.Hero;
-import javafx.animation.Animation;
+import Modeles.items.weapons.Weapon;
+import Vues.Menu.SettingsView;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.beans.binding.Bindings;
+import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
+import javafx.stage.Stage;
 import javafx.util.Duration;
+import utils.I18N;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class GameView extends StackPane {
     private GameModel model;
@@ -36,34 +45,38 @@ public class GameView extends StackPane {
     private Label attackText;
     private Label critText;
 
-    private Image playerUp1, playerUp2;
-    private Image playerDown1, playerDown2;
-    private Timeline walkUpAnimation;
-    private Timeline walkDownAnimation;
-
     // Déclaration du label pour afficher l'étage et la difficulté
     private Label labelEtage;
-
     private final Pane enemyLayer = new Pane();
-    private final Map<Character, ImageView> enemyViews = new HashMap<>();
-
+    private final Map<Character, Pane> enemyViews = new HashMap<>();
     private Rectangle attackZone;
     private ImageView mapLockView;
+    private ImageView mapViewBoss;
+    private GameControleur controleur;
+    private boolean isPauseMenuVisible = false;
+    private StackPane pauseOverlay;
+    private Rectangle cooldownBar;
+    private PlayerGraphicsManager playerGraphics;
+    private EnemyGraphicsManager enemyGraphicsManager;
 
 
     public GameView(GameModel model) {
         this.model = model; // ✅ affecte le modèle !
         this.setBackground(new Background(new BackgroundFill(Color.BLACK, null, null)));
 
+        this.setPrefSize(1280, 720);  // 👈 fixe la taille virtuelle
+        this.setMinSize(1280, 720);
+
         // Charger l'image de la carte
-        Image mapImage = new Image(getClass().getResource("/assets/image/map.png").toExternalForm());
+        Image mapImage = new Image(Objects.requireNonNull(getClass().getResource("/assets/image/map.png")).toExternalForm());
         mapView = new ImageView(mapImage);
+        mapView.setId("mapView"); // pour debug si besoin
         mapView.setPreserveRatio(false);
         mapView.setSmooth(false);
         mapView.fitHeightProperty().bind(heightProperty());
         mapView.fitWidthProperty().bind(widthProperty());
 
-        Image mapLockImage = new Image(getClass().getResource("/assets/image/maplock.png").toExternalForm());
+        Image mapLockImage = new Image(Objects.requireNonNull(getClass().getResource("/assets/image/maplock.png")).toExternalForm());
         mapLockView = new ImageView(mapLockImage);
         mapView.setPreserveRatio(false);
         mapView.setSmooth(false);
@@ -71,29 +84,29 @@ public class GameView extends StackPane {
         mapView.fitWidthProperty().bind(widthProperty());
         mapLockView.setVisible(false);       // caché par défaut
 
-        // Chargement des images du joueur
-        playerUp1 = new Image(getClass().getResource("/assets/image/player-up1.png").toExternalForm());
-        playerUp2 = new Image(getClass().getResource("/assets/image/player-up2.png").toExternalForm());
-        playerDown1 = new Image(getClass().getResource("/assets/image/player-down1.png").toExternalForm());
-        playerDown2 = new Image(getClass().getResource("/assets/image/player-down2.png").toExternalForm());
+        Image bossMap = new Image(Objects.requireNonNull(getClass().getResource("/assets/image/mapfinal.png")).toExternalForm());
+        mapViewBoss = new ImageView(bossMap);
+        mapViewBoss.setPreserveRatio(false);
+        mapViewBoss.setSmooth(false);
+        mapViewBoss.fitHeightProperty().bind(heightProperty());
+        mapViewBoss.fitWidthProperty().bind(widthProperty());
+        mapViewBoss.setVisible(false); // caché par défaut
 
-        // Animation du joueur en haut
-        walkUpAnimation = new Timeline(
-                new KeyFrame(Duration.seconds(0.3), e -> player.setImage(playerUp1)),
-                new KeyFrame(Duration.seconds(0.6), e -> player.setImage(playerUp2))
-        );
-        walkUpAnimation.setCycleCount(Animation.INDEFINITE);
+        enemyGraphicsManager = new EnemyGraphicsManager(enemyLayer, enemyViews);
 
-        // Animation du joueur en bas
-        walkDownAnimation = new Timeline(
-                new KeyFrame(Duration.seconds(0.3), e -> player.setImage(playerDown1)),
-                new KeyFrame(Duration.seconds(0.6), e -> player.setImage(playerDown2))
-        );
-        walkDownAnimation.setCycleCount(Animation.INDEFINITE);
+        cooldownBar = new Rectangle(100, 8); // largeur max = 100
+        cooldownBar.setFill(Color.ORANGE);
+        cooldownBar.setArcWidth(5);
+        cooldownBar.setArcHeight(5);
+        cooldownBar.setVisible(false);
+        cooldownBar.setLayoutX(590); // position vers le centre
+        cooldownBar.setLayoutY(680); // tout en bas
+
 
         // Image du joueur
-        Image playerImage = new Image(getClass().getResource("/assets/image/player.png").toExternalForm());
+        Image playerImage = new Image(Objects.requireNonNull(getClass().getResource("/assets/image/player.png")).toExternalForm());
         player = new ImageView(playerImage);
+        playerGraphics = new PlayerGraphicsManager(player);
         player.setFitWidth(150);
         player.setFitHeight(150);
         player.setPreserveRatio(true);
@@ -104,8 +117,10 @@ public class GameView extends StackPane {
         labelEtage.setTextFill(Color.WHITE);
 
         // Lier le texte du label à l'étage et à la difficulté
-        labelEtage.setText("Étage " + model.getLocationActuelle().getFloorLevel() +
-                " - Difficulté: " + model.getLocationActuelle().getDifficulty());
+        labelEtage.setText(
+                I18N.get("gameview.floor") + " " + model.getLocationActuelle().getFloorLevel() +
+                        " - " + I18N.get("gameview.difficulty") + " : " + model.getLocationActuelle().getDifficulty()
+        );
 
 
         // Création d'un Pane pour contenir le label et le positionner en haut à droite
@@ -121,8 +136,9 @@ public class GameView extends StackPane {
 
         // Définition de la hitbox
         hitbox = new Rectangle(64, 64);
-        hitbox.setStroke(Color.LIMEGREEN);
-        hitbox.setFill(Color.color(0, 1, 0, 0.2));
+        hitbox.setVisible(false);
+//        hitbox.setStroke(Color.LIMEGREEN);
+//        hitbox.setFill(Color.color(0, 1, 0, 0.2));
 
         // Création de la barre de vie
         hpBarFill = new Rectangle(200, 20);  // La barre rouge pour les HP
@@ -150,8 +166,6 @@ public class GameView extends StackPane {
         critText.setTextFill(Color.WHITE);
 
 
-
-
         // Créer une couche pour la barre de vie et le texte
         HBox hpBar = new HBox(5, hpBarFill, hpText);
 
@@ -161,7 +175,6 @@ public class GameView extends StackPane {
 
 
         // Création des couches pour la carte, le joueur, et la grille
-        Pane mapLayer = new Pane(mapView);
         Pane playerLayer = new Pane();
 
         attackZone = new Rectangle(100, 80); // largeur, hauteur de la zone de frappe
@@ -204,19 +217,30 @@ public class GameView extends StackPane {
         }
 
         // Ajouter tous les éléments à la vue
-        this.getChildren().addAll(mapLayer,mapLockView, grilleLayer, enemyLayer, playerLayer, statsBox, labelContainer);
+        //this.getChildren().addAll(mapLayer,mapLockView, grilleLayer, enemyLayer, playerLayer, statsBox, labelContainer);
+        playerLayer.getChildren().add(cooldownBar); // enlever si on veut avoir une animation pour voir le cooldowen
+        this.getChildren().addAll(mapView, mapViewBoss, mapLockView, enemyLayer, playerLayer, statsBox, labelContainer);
+
+
         this.setFocusTraversable(true);
+
+        this.setFocusTraversable(true); // pour capter ESC
+        activerEcouteClavier();
 
         // Mettre à jour la barre de vie du héros
         updateHpLabel(model);
+
+
     }
 
     // Méthode pour mettre à jour la barre de vie
     public void updateHealth(int currentHealth, int maxHealth) {
-        double healthPercentage = (double) currentHealth / maxHealth;  // Calculer la proportion de la vie
-        hpBarFill.setWidth(200 * healthPercentage);  // Ajuster la largeur de la barre rouge
-        hpText.setText("HP: " + currentHealth);  // Afficher les HP
+        int clampedCurrent = Math.max(0, Math.min(currentHealth, maxHealth)); // ✅ sécurité
+        double healthPercentage = (double) clampedCurrent / maxHealth;
+        hpBarFill.setWidth(200 * healthPercentage);
+        hpText.setText(I18N.get("gameview.hp") + ": " + clampedCurrent + " / " + maxHealth);
     }
+
 
     public void setPlayerPosition(double x, double y) {
         player.setLayoutX(x);
@@ -230,9 +254,13 @@ public class GameView extends StackPane {
         hitbox.setLayoutX(x + (150 - hitboxWidth) / 2);
         hitbox.setLayoutY(y + 150 - hitboxHeight - 10);
 
+        cooldownBar.setLayoutX(x + 25); // centré au-dessus du joueur
+        cooldownBar.setLayoutY(y - 10); // juste au-dessus de la tête
+
         // Mettre à jour la barre de vie à chaque déplacement
-        updateHealth(model.getHero().getHealth(), 100);
+        updateHealth(model.getHero().getHealth(), model.getHero().getMaxHealth());
         updateStatsLabel();
+
     }
 
     public void clearEnemies() {
@@ -240,55 +268,30 @@ public class GameView extends StackPane {
         enemyViews.clear();
     }
 
-    public void addEnemy(Modeles.characters.Character mob, double x, double y) {
-        Image img = new Image(getClass()
-                .getResource("/assets/image/mob1.png")
-                .toExternalForm());
-        ImageView iv = new ImageView(img);
-        iv.setFitWidth(150);           // on reprend 150px comme pour le joueur
-        iv.setFitHeight(150);
-        iv.setPreserveRatio(true);
-        iv.setLayoutX(x);
-        iv.setLayoutY(y);
-        enemyViews.put(mob, iv);
-        enemyLayer.getChildren().add(iv);
+    public void addEnemy(Character mob, double x, double y) {
+        enemyGraphicsManager.addEnemy(mob, x, y);
     }
 
-
-    // Méthode pour mettre à jour les HP du modèle
     private void updateHpLabel(GameModel model) {
         if (model != null && model.getHero() != null) {
-            int hp = model.getHero().getHealth(); // Récupérer les HP du héros
-            updateHealth(hp, 100);  // Mise à jour de la barre de vie
+            Hero hero = model.getHero();
+            updateHealth(hero.getHealth(), hero.getMaxHealth());
         }
     }
 
-    public void updateFloorLabel() {
-        // Exemple de mise à jour de l'affichage de l'étage, tu devras l'adapter à ta vue
-        labelEtage.setText("Étage " + model.getLocationActuelle().getFloorLevel() +
-                " - Difficulté : " + model.getLocationActuelle().getDifficulty());
 
+    public void updateFloorLabel() {
+        labelEtage.setText(
+                I18N.get("gameview.floor") + " " + model.getLocationActuelle().getFloorLevel() +
+                        " - " + I18N.get("gameview.difficulty") + " : " + model.getLocationActuelle().getDifficulty()
+        );
     }
 
-    public ImageView getEnemyView(Modeles.characters.Character mob) {
+
+    public Pane getEnemyView(Character mob) {
         return enemyViews.get(mob);
     }
 
-
-    public void startWalkUpAnimation() {
-        walkDownAnimation.stop();
-        walkUpAnimation.play();
-    }
-
-    public void stopWalkUpAnimation() {
-        walkUpAnimation.stop();
-        player.setImage(playerUp1);
-    }
-
-    public void startWalkDownAnimation() {
-        walkUpAnimation.stop();
-        walkDownAnimation.play();
-    }
 
     public void verrouillerMap() {
         mapLockView.setVisible(true);
@@ -299,17 +302,13 @@ public class GameView extends StackPane {
     }
 
 
-    public void stopWalkDownAnimation() {
-        walkDownAnimation.stop();
-        player.setImage(playerDown1);
-    }
-
     public void updateStatsLabel() {
         Hero hero = model.getHero();
         if (hero != null) {
-            speedText.setText("Vitesse : " + hero.getSpeed());
-            attackText.setText("Attaque : " + hero.getAttackPower());
-            critText.setText("Critique : " + hero.getCritChance() + "%");
+            Weapon weapon = hero.getWeapon();
+            speedText.setText(I18N.get("gameview.speed") + " : " + hero.getSpeed());
+            attackText.setText(I18N.get("gameview.attack") + " : " + hero.getAttackPower());
+            critText.setText(I18N.get("gameview.crit") + " : " + hero.getCritChance() + "%");
         }
     }
 
@@ -324,29 +323,40 @@ public class GameView extends StackPane {
     }
 
     public void afficherZoneAttaqueDirectionnelle(double x, double y, String direction) {
-        double w = attackZone.getWidth();
-        double h = attackZone.getHeight();
+        Weapon weapon = model.getHero().getWeapon();
+        double portee = weapon.getPortee();  // La hauteur de la zone
+        double largeurFixe = 100;            // Largeur constante
+
+        attackZone.setWidth(largeurFixe);
+        attackZone.setHeight(portee);
+
         double offsetX = 0, offsetY = 0;
 
         switch (direction) {
-            case "up":
+            case "up" -> {
+                offsetX = 25;                 // centré sur le joueur
+                offsetY = -portee;           // vers le haut
+            }
+            case "down" -> {
                 offsetX = 25;
-                offsetY = -h;
-                break;
-            case "down":
-                offsetX = 25;
-                offsetY = 150;
-                break;
-            case "left":
-                offsetX = -w;
+                offsetY = 150;               // sous le joueur
+            }
+            case "left" -> {
+                // Pour les côtés, on inverse largeur et hauteur
+                attackZone.setWidth(portee);
+                attackZone.setHeight(80);    // hauteur fixe sur les côtés
+                offsetX = -portee;           // à gauche
                 offsetY = 25;
-                break;
-            case "right":
-                offsetX = 150;
+            }
+            case "right" -> {
+                attackZone.setWidth(portee);
+                attackZone.setHeight(80);
+                offsetX = 150;               // à droite
                 offsetY = 25;
-                break;
-            default:
+            }
+            default -> {
                 return;
+            }
         }
 
         attackZone.setLayoutX(x + offsetX);
@@ -363,5 +373,139 @@ public class GameView extends StackPane {
     }
 
 
+    public void setMapBackgroundForFloor(int floorLevel) {
+        boolean boss = (floorLevel == 30);
+        mapView.setVisible(!boss);
+        mapLockView.setVisible(!boss);
+        mapViewBoss.setVisible(boss);
+
+
+    }
+
+    public void showPauseMenu() {
+        if (pauseOverlay != null && this.getChildren().contains(pauseOverlay)) return;
+
+        isPauseMenuVisible = true;
+
+        VBox menuBox = new VBox(15);
+        menuBox.setAlignment(Pos.CENTER);
+        menuBox.setStyle("""
+        -fx-background-color: rgba(0, 0, 0, 0.85);
+        -fx-background-radius: 20;
+        -fx-padding: 30;
+    """);
+        menuBox.setMaxWidth(300);
+        menuBox.setMaxHeight(250);
+
+        Button resumeBtn = new Button("🔙 " + I18N.get("pause.resume"));
+        Button settingsBtn = new Button("⚙ " + I18N.get("pause.settings"));
+        Button quitBtn = new Button("🏠 " + I18N.get("pause.quit"));
+        Button saveBtn = new Button("💾 " + I18N.get("pause.save"));
+
+        for (Button btn : new Button[]{resumeBtn, settingsBtn, quitBtn,saveBtn}) {
+            btn.setFont(Font.font("Arial", FontWeight.BOLD, 16));
+            btn.setTextFill(Color.WHITE);
+            btn.setStyle("-fx-background-color: transparent; -fx-border-color: white; -fx-border-radius: 10; -fx-padding: 10;");
+            btn.setOnMouseEntered(e -> btn.setStyle("-fx-background-color: white; -fx-text-fill: black; -fx-border-radius: 10; -fx-padding: 10;"));
+            btn.setOnMouseExited(e -> btn.setStyle("-fx-background-color: transparent; -fx-text-fill: white; -fx-border-color: white; -fx-border-radius: 10; -fx-padding: 10;"));
+        }
+
+        resumeBtn.setOnAction(e -> hidePauseMenu());
+
+        saveBtn.setOnAction(e -> {
+            if (controleur != null) {
+                controleur.sauvegarderPartie(controleur.getNomFichierSauvegarde());
+            }
+        });
+
+
+        settingsBtn.setOnAction(e -> {
+            Stage stage = (Stage) this.getScene().getWindow();
+            MenuControleur menuControleur = new MenuControleur(stage);
+            SettingsControleur sc = new SettingsControleur(stage, menuControleur);
+
+            sc.setOnRetour(() -> {
+                utils.TransitionUtils.fadeToScene(stage, this);
+                if (controleur != null) {
+                    controleur.updateSettings();
+                    controleur.reloadKeyBindings();
+                }
+                hidePauseMenu();
+            });
+
+            StackPane settingsRoot = new StackPane(new utils.InkBackground(), new SettingsView(sc));
+            utils.TransitionUtils.fadeToScene(stage, settingsRoot);
+        });
+
+        quitBtn.setOnAction(e -> {
+            isPauseMenuVisible = false;
+            MenuControleur mc = new MenuControleur((Stage) this.getScene().getWindow());
+            utils.TransitionUtils.fadeToScene((Stage) this.getScene().getWindow(), mc.creerVueAvecFond(new Vues.Menu.SplashMenu(mc)));
+        });
+
+        menuBox.getChildren().addAll(resumeBtn, saveBtn, settingsBtn, quitBtn);
+        pauseOverlay = new StackPane(menuBox);
+        StackPane.setAlignment(menuBox, Pos.CENTER);
+        this.getChildren().add(pauseOverlay);
+    }
+
+
+    public void hidePauseMenu() {
+        if (pauseOverlay != null) {
+            this.getChildren().remove(pauseOverlay);
+            pauseOverlay = null;
+        }
+        isPauseMenuVisible = false;
+        this.requestFocus(); // remet le focus au jeu
+    }
+
+
+    public void activerEcouteClavier() {
+        this.setFocusTraversable(true);
+        this.requestFocus();
+
+        // Handler local sur GameView
+        this.setOnKeyPressed(e -> {
+            if (e.getCode() == KeyCode.ESCAPE) {
+                if (isPauseMenuVisible) {
+                    hidePauseMenu();
+                } else {
+                    showPauseMenu();
+                }
+            }
+        });
+
+    }
+
+    public boolean isPauseMenuVisible() {
+        return isPauseMenuVisible;
+    }
+
+
+    public void setControleur(GameControleur controleur) {
+        this.controleur = controleur;
+    }
+
+    public void afficherCooldown(double seconds) {
+        cooldownBar.setVisible(true);
+        cooldownBar.setWidth(100); // pleine barre
+
+        Timeline cooldownAnim = new Timeline(
+                new KeyFrame(Duration.seconds(0), e -> cooldownBar.setWidth(100)),
+                new KeyFrame(Duration.seconds(seconds), e -> {
+                    cooldownBar.setVisible(false);
+                    cooldownBar.setWidth(0);
+                }, new javafx.animation.KeyValue(cooldownBar.widthProperty(), 0))
+        );
+        cooldownAnim.play();
+    }
+
+    public void removeEnemyView(Character mob) {
+        enemyViews.remove(mob);
+    }
+
+    public PlayerGraphicsManager getPlayerGraphics() {
+        return playerGraphics;
+    }
 
 }

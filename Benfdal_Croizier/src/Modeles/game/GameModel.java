@@ -15,6 +15,7 @@ public class GameModel {
     private int currentFloor = 0;
     private static final int TOTAL_FLOOR = 30;
     private Location locationActuelle;
+    private long startTime = -1;
 
     public GameModel() {
         grilleMarchable = new boolean[17][30];
@@ -33,6 +34,20 @@ public class GameModel {
         for (int x = 8; x <= 20; x++) grilleMarchable[3][x] = false;
         for (int y = 0; y <= 16; y++) grilleMarchable[y][8] = false;
         for (int y = 0; y <= 16; y++) grilleMarchable[y][20] = false;
+
+
+        for (int x = 14; x <= 16; x++){
+        for (int y = 9; y <= 12; y++) {
+            grilleMarchable[x][y] = false;
+        }}
+
+        for (int x = 14; x <= 16; x++){
+            for (int y = 16; y <= 19; y++) {
+                grilleMarchable[x][y] = false;
+            }}
+
+
+
 
         // Position initiale du joueur
         playerX = 13 * tailleCase;
@@ -127,6 +142,21 @@ public class GameModel {
     public void changerEtage(int nouvelÉtage, String nouvelleDescription) {
         this.currentFloor = nouvelÉtage; // ✅ MET À JOUR L'ÉTAGE COURANT
         this.locationActuelle = new Location("Etage " + nouvelÉtage, nouvelleDescription, nouvelÉtage, List.of(Direction.NORTH));
+    }
+
+    public void demarrerChrono() {
+        if (startTime == -1) {
+            startTime = System.currentTimeMillis();
+        }
+    }
+
+    public int getTempsEnSecondes() {
+        if (startTime == -1) return 0;
+        return (int) ((System.currentTimeMillis() - startTime) / 1000);
+    }
+
+    public void setChronoOffset(int seconds) {
+        startTime = System.currentTimeMillis() - seconds * 1000L;
     }
 
 }
